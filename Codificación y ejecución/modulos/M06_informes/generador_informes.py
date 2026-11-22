@@ -1,70 +1,106 @@
-from estructuras.Algoritmos import mergeSort
+from estructuras import TablaHash
+from estructuras.Algoritmos import (mergeSort, quickSort, busquedaSecuencial, busquedaBinaria, busquedaBinariaRecursiva)
+from modulos.comun import validarTexto, validarEntero
 
+SIN_CATEGORIA = "Sin categoría"
 
-class Ordenamientos:
-    @staticmethod
-    def bubbleSort(arr, clave=lambda x: x):
-        arrCopia = arr.copy()
-        for i in range(len(arrCopia)):
-            for j in range(len(arrCopia)-1-i):
-                if clave(arrCopia[j]) > clave(arrCopia[j+1]):
-                    arrCopia[j], arrCopia[j+1] = arrCopia[j+1], arrCopia[j]
-        return arrCopia
-
-    @staticmethod
-    def quickSort(arr, clave=lambda x: x, izq=0, der=None):
-        if der is None:
-            der = len(arr) - 1
-
-        if izq < der:
-            p = Ordenamientos._particionar(arr, clave, izq, der)
-            Ordenamientos.quickSort(arr, clave, izq, p - 1)
-            Ordenamientos.quickSort(arr, clave, p + 1, der)
-        return arr
-
-    @staticmethod
-    def _particionar(arr, clave, izq, der):
-        pivote = clave(arr[der])
-        i = izq - 1
-        for j in range(izq, der):
-            if clave(arr[j]) < pivote:
-                i += 1
-                arr[i], arr[j] = arr[j], arr[i]
-        arr[i + 1], arr[der] = arr[der], arr[i + 1]
-        return i + 1
+def _nombre(recurso):
+    return recurso.nombre.lower()
 
 class GeneradorInformes:
-    def __init__(self, gestorRecursos=None, gestorPrestamos=None):
-        self.gestorRecursos = gestorRecursos
-        self.gestorPrestamos = gestorPrestamos
 
-    # ______Reportes______
+    def __init__(self, gestorUsuarios, gestorRecursos, gestorPrestamos, gestorCategorias):
+        self.usuarios = gestorUsuarios
+        self.recursos = gestorRecursos
+        self.prestamos = gestorPrestamos
+        self.categorias = gestorCategorias
 
-    def generarReporteUso(self):
-        if not self.gestorPrestamos:
-            return "Sin datos"
-        total = self.gestorPrestamos.obtenerCantidad()
-        return f"Total de préstamos registrados: {total}"
+    # ---- RQF-043 ----
+    def reporteUso(self, ahora=None):
+        todos = self.prestamos.listarTodos()
+        return {
+            "Préstamos registrados": len(todos),
+            "Préstamos activos": self.prestamos.obtenerCantidadActivos(),
+            "Préstamos devueltos": sum(1 for p in todos if not p.estaActivo()),
+            "Préstamos atrasados": len(self.prestamos.listarAtrasados(ahora)),
+            "Usuarios activos": self.usuarios.obtenerCantidadActivos(),
+            "Usuarios con préstamos": sum(1 for u in self.usuarios.listarTodos() if u.prestamosActivos),
+        }
 
-    def generarReporteInventario(self):
-        if not self.gestorRecursos:
-            return "Sin datos"
-        return str(self.gestorRecursos)
+    # ---- RQF-034 ----
+    def reporteInventario(self):   #Recursos por tipo y unidades disponibles por tipo(el detalle por sede esta en M07)
+        filas = []
+        for tipo in ("Libro", "Equipo", "Sala"):
+            recursos = self.recursos.listarxTipo(tipo)
+            vigentes = [r for r in recursos if r.estaVigente()]
+            unidades = sum(self.recursos.inventario.totalDisponible(r.codigo) for r in vigentes)
+            filas.append((tipo, len(recursos), len(vigentes), unidades))
+        return filas
 
-    # listados
+    # ---- RQF-021 y RQF-031 ----
+    def masPrestados(self, cantidad=None):
+        ordenados = mergeSort(self.recursos.listarTodos(),
+                              clave=lambda r: r.cantidadPrestamos, reverso=True)
+        return ordenados if cantidad is None else ordenados[:validarEntero(cantidad, "La cantidad", 1)]
 
-    # Entrega 2 (C8): merge sort, O(n log n) y estable. Antes era bubble sort, O(n²).
-    def listarRecursosOrdenadosNombre(self, recursos):
-        return mergeSort(recursos, clave=lambda r: r.nombre)
+    # ---- RQF-022 ----
+    def porAntiguedad(self, masAntiguosPrimero=True):
+        return quickSort(self.recursos.listarTodos(),
+                         clave=lambda r: (r.fechaRegistro, r.codigo),
+                         reverso=not masAntiguosPrimero)
 
-    def listarRecursosOrdenadosPrestamos(self, recursos):
-        # Estable: si dos recursos tienen la misma cantidad, conservan su orden por código
-        return mergeSort(recursos, clave=lambda r: r.cantidadPrestamos, reverso=True)
+    # ---- RQF-024 ----
+    def buscarPorNombre(self, nombre, recursiva=False):         #Búsqueda binaria sobre el catálogo ordenado del BST. Devuelve los recursos con ese nombre (puede haber varios con el mismo nombre)
+        objetivo = validarTexto(nombre, "El nombre a buscar").lower()
+        catalogo = self.recursos.catalogoOrdenado()
+        buscar = busquedaBinariaRecursiva if recursiva else busquedaBinaria
+        i = buscar(catalogo, objetivo, _nombre)
+        if i == -1:
+            return []
+        encontrados = []
+        while i < len(catalogo) and _nombre(catalogo[i]) == objetivo:
+            encontrados.append(catalogo[i])
+            i += 1
+        return encontrados
 
-    def listarUsuariosOrdenadosNombre(self, usuarios):
-        return mergeSort(usuarios, clave=lambda u: u.nombre)
+    def buscarPorNombreSecuencial(self, nombre):            #Misma búsqueda pero secuencial sobre el vector sin ordenar (para comparar).
+        objetivo = validarTexto(nombre, "El nombre a buscar").lower()
+        vigentes = [r for r in self.recursos.listarTodos() if r.estaVigente()]
+        i = busquedaSecuencial(vigentes, objetivo, clave=_nombre)
+        return vigentes[i] if i != -1 else None
 
-    def obtenerOrdenamientos(self):
-        return Ordenamientos
+    # ---- RQF-032 ----
+    def tasaDevolucion(self, ahora=None):           #Préstamos devueltos a tiempo frente al total de préstamos ya vencidos o cerrados (los activos que aún están dentro del plazo no se cuentan).
+        aTiempo = tarde = 0
+        for p in self.prestamos.listarTodos():
+            if p.estaActivo() and not p.estaAtrasado(ahora):
+                continue
+            if p.fueTarde(ahora):
+                tarde += 1
+            else:
+                aTiempo += 1
+        total = aTiempo + tarde
+        return {"aTiempo": aTiempo, "tarde": tarde, "total": total,
+                "porcentaje": round(100 * aTiempo / total, 1) if total else 0.0}
 
-    
+    # ---- RQF-033 ----
+    def demandaPorCategoria(self, agruparEnPrincipal=False):            #[(nombre de categoría, préstamos)] de mayor a menor demanda.
+        conteo = TablaHash()
+        for p in self.prestamos.listarTodos():
+            codigoCategoria = self.recursos.obtener(p.codigoRecurso).categoria
+            if codigoCategoria is None:
+                nombre = SIN_CATEGORIA
+            elif agruparEnPrincipal:
+                nombre = self.categorias.raizDe(codigoCategoria).ruta()
+            else:
+                nombre = self.categorias.obtener(codigoCategoria).ruta()
+            conteo.incrementar(nombre)
+        return mergeSort(list(conteo.items()), clave=lambda par: par[1], reverso=True)
+
+    # ---- RQF-044 ----
+    def usuariosPorNombre(self):
+        return mergeSort(self.usuarios.listarTodos(), clave=lambda u: (u.nombre.lower(), u.codigo))
+
+    def recursosPorNombre(self):            #El catálogo ya está ordenado: es el recorrido en orden del BST (RQF-052).
+        return self.recursos.catalogoOrdenado()
+
