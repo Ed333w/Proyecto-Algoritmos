@@ -1,7 +1,7 @@
 # CI/CD - Sistema de Gestión de Recursos Comunitarios (Proyecto Algoritmos)
 #
 # CI (integración continua): en cada push o pull request a main se verifica la
-#     sintaxis, se ejecutan las pruebas de test_pruebas.py y se arranca el menú.
+#     sintaxis, se ejecutan las pruebas de tests/ y se arranca el menú.
 # CD (entrega continua): al crear una etiqueta de versión (v1.0, v2.0, ...) y solo
 #     si las pruebas pasan, se empaqueta el código y se publica como Release.
 
@@ -45,11 +45,11 @@ jobs:
 
       - name: Verificar sintaxis de todos los módulos
         working-directory: ${{ env.CODIGO }}
-        run: python -m compileall -q estructuras modulos main.py test_pruebas.py
+        run: python -m compileall -q estructuras modulos interfaz_terminal persistencia main.py medicion_eficiencia.py
 
       - name: Pruebas por módulo (exitoso, borde y cuello de botella)
         working-directory: ${{ env.CODIGO }}
-        run: python -m pytest test_pruebas.py -v
+        run: python -m pytest -v
 
       - name: Arranque del menú principal
         working-directory: ${{ env.CODIGO }}
@@ -70,7 +70,8 @@ jobs:
         run: |
           cd "$CODIGO"
           zip -r "../proyecto-algoritmos-${GITHUB_REF_NAME}.zip" \
-            main.py estructuras modulos test_pruebas.py COMO_EJECUTAR.md PRUEBAS.md \
+            main.py estructuras modulos interfaz_terminal persistencia tests \
+            "Como ejcutar.md" pytest.ini setup.cfg \
             -x "*__pycache__*" "*.DS_Store"
 
       - name: Publicar Release en GitHub
