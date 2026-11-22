@@ -1,9 +1,16 @@
 # CI/CD - Sistema de Gestión de Recursos Comunitarios (Proyecto Algoritmos)
 #
-# CI (integración continua): en cada push o pull request a main se verifica la
-#     sintaxis, se ejecutan las pruebas de tests/ y se arranca el menú.
-# CD (entrega continua): al crear una etiqueta de versión (v1.0, v2.0, ...) y solo
-#     si las pruebas pasan, se empaqueta el código y se publica como Release.
+# CI (integración continua): en cada push y pull request a main
+#   1. Calidad:   compila todo y revisa estilo con flake8 (usa setup.cfg).
+#   2. Pruebas:   pytest en Linux y Windows con Python 3.9, 3.11 y 3.13; sube el
+#                 reporte de casos (tests/reporte/resultados_pruebas.json) como artefacto.
+#   3. Ejecución: abre el programa con los datos de prueba, recorre los menús,
+#                 verifica que guarda al salir y publica la medición de eficiencia.
+#
+# CD (entrega continua): al subir una etiqueta v* y solo si las tres etapas
+# anteriores pasaron, empaqueta el sistema en un ZIP y lo publica como Release:
+#     git tag v3.0
+#     git push origin v3.0
 
 name: CI-CD
 
@@ -13,16 +20,53 @@ on:
     tags: ["v*"]
   pull_request:
     branches: [main]
+  workflow_dispatch:        # botón "Run workflow" en la pestaña Actions
+
+permissions:
+  contents: read
+
+# Si se hace otro push mientras corre, se cancela la ejecución vieja
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   PYTHONIOENCODING: utf-8
+  PYTHONUTF8: "1"
   CODIGO: "Codificación y ejecución"
 
 defaults:
   run:
     shell: bash
+    working-directory: "Codificación y ejecución"
 
 jobs:
+  # ---------------------------------------------------------------- 1. Calidad
+  calidad:
+    name: Calidad (compilación y flake8)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v7
+
+      - name: Instalar Python 3.13
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Instalar flake8
+        run: python -m pip install --upgrade pip flake8
+
+      - name: Verificar que todos los .py compilan
+        run: python -m compileall -q .
+
+      - name: flake8 - errores graves (sintaxis, nombres no definidos) hacen fallar el build
+        run: python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: flake8 - estilo (solo aviso, no falla el build)
+        run: python -m flake8 . --count --exit-zero --statistics
+
+  # ---------------------------------------------------------------- 2. Pruebas
   pruebas:
     name: Pruebas (${{ matrix.os }}, Python ${{ matrix.python }})
     runs-on: ${{ matrix.os }}
@@ -33,51 +77,110 @@ jobs:
         python: ["3.9", "3.11", "3.13"]
     steps:
       - name: Descargar el código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Instalar Python ${{ matrix.python }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
 
       - name: Instalar pytest
         run: python -m pip install --upgrade pip pytest
 
-      - name: Verificar sintaxis de todos los módulos
-        working-directory: ${{ env.CODIGO }}
-        run: python -m compileall -q estructuras modulos interfaz_terminal persistencia main.py medicion_eficiencia.py
+      - name: Verificar sintaxis con Python ${{ matrix.python }}
+        run: python -m compileall -q .
 
       - name: Pruebas por módulo (exitoso, borde y cuello de botella)
-        working-directory: ${{ env.CODIGO }}
         run: python -m pytest -v
 
-      - name: Arranque del menú principal
-        working-directory: ${{ env.CODIGO }}
-        run: echo "0" | python main.py
+      - name: Subir reporte de casos de prueba
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: reporte-pruebas-${{ matrix.os }}-py${{ matrix.python }}
+          path: ${{ env.CODIGO }}/tests/reporte/
+          if-no-files-found: warn
 
+  # ---------------------------------------------------------------- 3. Ejecución
+  ejecucion:
+    name: Ejecución del programa y medición de eficiencia
+    runs-on: ubuntu-latest
+    env:
+      SIN_LIMPIAR: "1"          # no borra la pantalla entre menús
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v7
+
+      - name: Instalar Python 3.13
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Generar los datos de prueba (más de 500 registros)
+        run: |
+          # main.py usa la carpeta de DATOS_PROYECTO en vez de datos/
+          echo "DATOS_PROYECTO=$RUNNER_TEMP/datos" >> "$GITHUB_ENV"
+          python -m persistencia.datos_masivos "$RUNNER_TEMP/datos"
+
+      - name: Abrir el programa, recorrer los 11 menús y salir
+        run: |
+          # Enter (aviso de vencimientos), entrar y volver de cada menú, y 0 para salir y guardar
+          printf '%s\n' "" 1 0 2 0 3 0 4 0 5 0 6 0 7 0 8 0 9 0 10 0 11 "" 0 \
+            | python main.py 2>&1 | tee "$RUNNER_TEMP/salida_programa.txt"
+
+          salida="$RUNNER_TEMP/salida_programa.txt"
+          if grep -q "Traceback" "$salida"; then
+            echo "::error::El programa lanzó una excepción (ver la salida arriba)"; exit 1
+          fi
+          grep -q "Datos cargados desde" "$salida" \
+            || { echo "::error::El programa no cargó los datos de prueba"; exit 1; }
+          grep -q "Se guardaron" "$salida" \
+            || { echo "::error::El programa no guardó los datos al salir"; exit 1; }
+          test -s "$DATOS_PROYECTO/usuarios.txt" \
+            || { echo "::error::No quedó el archivo usuarios.txt después de salir"; exit 1; }
+          echo "El programa abrió, recorrió los menús y guardó en $DATOS_PROYECTO"
+
+      - name: Medición de eficiencia (estructuras propias frente a list, dict y set)
+        run: |
+          python medicion_eficiencia.py "$RUNNER_TEMP/medicion_eficiencia.json" \
+            | tee "$RUNNER_TEMP/medicion_eficiencia.txt"
+          {
+            echo "## Medición de eficiencia (Python 3.13, Linux)"
+            echo '```'
+            cat "$RUNNER_TEMP/medicion_eficiencia.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Subir salida del programa y medición
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ejecucion-y-medicion
+          path: |
+            ${{ runner.temp }}/salida_programa.txt
+            ${{ runner.temp }}/medicion_eficiencia.json
+            ${{ runner.temp }}/medicion_eficiencia.txt
+          if-no-files-found: warn
+
+  # ---------------------------------------------------------------- 4. Entrega (CD)
   entrega:
     name: Entrega continua (Release)
-    needs: pruebas
+    needs: [calidad, pruebas, ejecucion]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - name: Descargar el código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Empaquetar el sistema
         run: |
-          cd "$CODIGO"
-          zip -r "../proyecto-algoritmos-${GITHUB_REF_NAME}.zip" \
-            main.py estructuras modulos interfaz_terminal persistencia tests \
-            "Como ejcutar.md" pytest.ini setup.cfg \
-            -x "*__pycache__*" "*.DS_Store"
+          zip -r "../proyecto-algoritmos-${GITHUB_REF_NAME}.zip" . \
+            -x "*__pycache__*" "*.pyc" ".pytest_cache/*" "datos/*" "tests/reporte/*"
 
       - name: Publicar Release en GitHub
         uses: softprops/action-gh-release@v2
         with:
           files: proyecto-algoritmos-*.zip
           generate_release_notes: true
-
-  #
