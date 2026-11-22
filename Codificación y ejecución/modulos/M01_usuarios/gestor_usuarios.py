@@ -45,9 +45,7 @@ class GestorUsuarios:
         if usuario.esActivo():
             self.activos.agregar(usuario.codigo)
 
-    def registrar(self, nombre, email, tipoDocumento, numeroDocumento):
-        """RQF-001: alta con código automático. Rechaza datos vacíos, correos repetidos
-        y documentos ya registrados."""
+    def registrar(self, nombre, email, tipoDocumento, numeroDocumento): #RQF-001: alta con código automático. Rechaza datos vacíos, correos repetidos y documentos ya registrados.   
         nombre = validarTexto(nombre, "El nombre")
         sigla, numero = self.validarDocumento(tipoDocumento, numeroDocumento)
         email = validarEmail(email)
@@ -57,90 +55,76 @@ class GestorUsuarios:
         self.codigos.siguiente()
         return usuario.codigo
 
-    def cargarExistente(self, usuario):
-        """Persistencia: agrega un usuario ya creado conservando su código."""
+    def cargarExistente(self, usuario):    #Persistencia: agrega un usuario ya creado conservando su código.
         if self.indice.contiene(usuario.codigo):
             raise ValueError(f"El usuario {usuario.codigo} está repetido en los datos")
         self.codigos.registrarExistente(usuario.codigo)
         self._indexar(usuario)
-        
-        #generar un código único para el usuario
-        self.contadorCodigos += 1
-        codigo = f"U{self.contadorCodigos:03d}"  # Formato: U001, U002, etc.
 
-        #crear un nuevo usuario
-        usuario = Usuario(codigo, nombre, email)
+    # ---- consultas ----
+    def buscarxCodigo(self, codigo):        #RQF-002 y RQF-019: O(1) promedio. Devuelve None si no existe.
+        return self.indice.buscar(str(codigo).strip().upper())
 
-        #almacenar el usuario en el vector dinámico
-        self.usuarios.agregar(usuario)
-        self.codigosUsados.add(codigo)
-        self.indice.insertar(codigo, usuario)
+    def buscarPorDocumento(self, tipoDocumento, numeroDocumento):       #RQF-002: consulta por tipo y número de documento, O(1) promedio. None si no existe.
+        sigla, numero = self.validarDocumento(tipoDocumento, numeroDocumento)
+        return self.indiceDocumento.buscar(self._claveDocumento(sigla, numero))
 
-        return codigo  # Devolver el código del usuario registrado
+    def obtenerPorDocumento(self, tipoDocumento, numeroDocumento):
+        usuario = self.buscarPorDocumento(tipoDocumento, numeroDocumento)
+        if usuario is None:
+            raise ValueError(f"No hay ningún usuario con el documento {tipoDocumento.upper()} {numeroDocumento}")
+        return usuario
 
-    def buscarUsuario(self, codigo):
-        # Entrega 2: búsqueda en la tabla hash, O(1) promedio
-        return self.indice.buscar(codigo)
+    def obtener(self, codigo):
+        usuario = self.buscarxCodigo(codigo)
+        if usuario is None:
+            raise ValueError(f"El usuario {codigo} no existe")
+        return usuario
 
-    def buscarxCodigo(self, codigo):
-        # Mismo nombre que en GestorRecursos (lo usan Préstamos y Turnos)
-        return self.buscarUsuario(codigo)
-
-    def buscarUsuarioLineal(self, codigo):
-        # Versión de la Entrega 1 (recorre el vector, O(n)); se deja para comparar
-        for usuario in self.usuarios.recorrer():
-            if usuario.codigo == codigo:
-                return usuario
-        return None
-
-    def actualizar(self, codigo, nuevoEmail):
-        usuario = self.buscarUsuario(codigo)
-        if usuario:
-            usuario.email = nuevoEmail
-            return True  # Actualización exitosa
-        return False  # Usuario no encontrado
-
-    def darDeBaja(self, codigo):
-        usuario = self.buscarUsuario(codigo)
-        if usuario:
-            if usuario.cantidadPrestamos > 0:
-                raise ValueError(f"No se puede dar de baja al usuario {codigo}: tiene {usuario.cantidadPrestamos} préstamos activos.")
-            usuario.darDeBaja()
-            return True  # Baja exitosa
-        return False  # Usuario no encontrado
-
-    def reactivar(self, codigo):
-        usuario = self.buscarUsuario(codigo)
-        if usuario and not usuario.esActivo():
-            usuario.reactivar()
-            return True  # Reactivación exitosa
-        return False  # Usuario no encontrado o ya activo
+    def validarActivo(self, codigo):        #regla compartida por préstamos y turnos: el usuario existe y está activo.
+        usuario = self.obtener(codigo)
+        if not usuario.esActivo():
+            raise ValueError(f"El usuario {usuario.codigo} está inactivo")
+        return usuario
 
     def listarTodos(self):
-        return self.usuarios.recorrer()  # Devolver la lista de todos los usuarios
+        return self.usuarios.recorrer()
 
     def listarActivos(self):
-        todos = self.usuarios.recorrer()
-        return [u for u in todos if u.esActivo()]  # Devolver solo los usuarios activos
-
-    def codigoExiste(self, codigo):
-        return codigo in self.codigosUsados  
+        return [u for u in self.usuarios if self.activos.contiene(u.codigo)]
 
     def obtenerCantidad(self):
-        return self.usuarios.obtenerTamaño()
+        return len(self.usuarios)
 
     def obtenerCantidadActivos(self):
-        return len(self.listarActivos())
+        return len(self.activos)
 
-    def limpiar(self):
-        self.usuarios.limpiar()
-        self.contadorCodigos = 0
-        self.codigosUsados.clear()
-        self.indice = TablaHash(211)
+    # ---- modificaciones ----
+    def actualizarEmail(self, codigo, nuevoEmail):          #RQF-003: el nombre no cambia porque identifica al usuario en el historial. Rechaza correos repetidos.
+        usuario = self.obtener(codigo)
+        email = validarEmail(nuevoEmail)
+        self._validarEmailLibre(email, usuario.codigo)
+        self.indiceEmail.eliminar(usuario.email)
+        usuario.email = email
+        self.indiceEmail.insertar(email, usuario.codigo)
+
+    def darDeBaja(self, codigo):            #RQF-004: baja lógica; conserva el historial. Exige no tener préstamos activos.
+        usuario = self.obtener(codigo)
+        if not usuario.esActivo():
+            raise ValueError(f"El usuario {usuario.codigo} ya está inactivo")
+        if usuario.prestamosActivos > 0:
+            raise ValueError(f"No se puede dar de baja a {usuario.codigo}: "
+                             f"tiene {usuario.prestamosActivos} préstamo(s) activo(s)")
+        usuario.darDeBaja()
+        self.activos.eliminar(usuario.codigo)
+
+    def reactivar(self, codigo):            #RQF-035: reactiva un usuario inactivo. Exige que no esté activo y que exista.
+        """RQF-035."""
+        usuario = self.obtener(codigo)
+        if usuario.esActivo():
+            raise ValueError(f"El usuario {usuario.codigo} ya está activo")
+        usuario.reactivar()
+        self.activos.agregar(usuario.codigo)
 
     def __str__(self):
-        activos = self.obtenerCantidadActivos()
-        total = self.obtenerCantidad()
-        return f"GestorUsuarios(total={total}, activos={activos})"
-           
-    
+        return f"GestorUsuarios(total={self.obtenerCantidad()}, activos={self.obtenerCantidadActivos()})"
