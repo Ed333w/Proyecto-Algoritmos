@@ -1,59 +1,61 @@
 from datetime import datetime
 
+from modulos.comun import fechaATexto
+
+ACTIVO, INACTIVO = "Activo", "Inactivo"
+
+# Tipos de documento aceptados (sigla -> nombre)
+TIPOS_DOCUMENTO = (("CC", "Cédula de ciudadanía"), ("TI", "Tarjeta de identidad"),
+                   ("CE", "Cédula de extranjería"), ("PA", "Pasaporte"))
+
 class Usuario:
-    def __init__(self, codigo, nombre, email):
+    def __init__(self, codigo, nombre, email, tipoDocumento, numeroDocumento,
+                 fechaRegistro=None, estado=ACTIVO):
         self.codigo = codigo
         self.nombre = nombre
         self.email = email
-        self.fechaRegistro = datetime.now()
-        self.estado = "Activo"
-        self.cantidadPrestamos = 0
-        self.historialPrestamos = []
-
-    def registrarPrestamo(self, codigoPrestamo):
-        if codigoPrestamo not in self.historialPrestamos:
-            self.historialPrestamos.append(codigoPrestamo)
-            self.cantidadPrestamos += 1
-
-    def devolverPrestamo(self, codigoPrestamo):
-        if codigoPrestamo in self.historialPrestamos:
-            self.historialPrestamos.remove(codigoPrestamo)
-            self.cantidadPrestamos = max(0, self.cantidadPrestamos - 1)
-            return True
-        return False
-
-    def actualizarEmail(self, nuevoEmail):
-        self.email = nuevoEmail
-
-    def darDeBaja(self):
-        self.estado = "Inactivo"
-
-    def reactivar(self):
-        self.estado = "Activo"
+        self.tipoDocumento = tipoDocumento
+        self.numeroDocumento = numeroDocumento
+        self.fechaRegistro = fechaRegistro or datetime.now()
+        self.estado = estado
+        self.prestamosActivos = 0
 
     def esActivo(self):
-        return self.estado == "Activo"
+        return self.estado == ACTIVO
 
-    def obtenerInformacion(self):
+    def darDeBaja(self):
+        self.estado = INACTIVO
+
+    def reactivar(self):
+        self.estado = ACTIVO
+
+    def sumarPrestamo(self):
+        self.prestamosActivos += 1
+
+    def restarPrestamo(self):
+        self.prestamosActivos = max(0, self.prestamosActivos - 1)
+
+    def documento(self):
+        return f"{self.tipoDocumento} {self.numeroDocumento}"
+
+    def obtenerInfo(self):
         return {
             "codigo": self.codigo,
             "nombre": self.nombre,
+            "documento": self.documento(),
             "email": self.email,
-            "fechaRegistro": self.fechaRegistro,
+            "fechaRegistro": fechaATexto(self.fechaRegistro),
             "estado": self.estado,
-            "cantidadPrestamos": self.cantidadPrestamos,
-            "historialPrestamos": self.historialPrestamos
+            "prestamosActivos": self.prestamosActivos,
         }
 
-    def __str__(self):
-        return f"Usuario({self.codigo}: {self.nombre}, {self.email}, {self.estado})"
-
-    def __repr__(self):
-        return f"Usuario(codigo='{self.codigo}', nombre='{self.nombre}', email='{self.email}', estado='{self.estado}', prestamos={self.cantidadPrestamos})"
-
     def __eq__(self, otro):
-        if isinstance(otro, Usuario):
-            return self.codigo == otro.codigo
-        return False
+        return isinstance(otro, Usuario) and self.codigo == otro.codigo
 
-    
+    def __hash__(self):
+        return hash(self.codigo)
+
+    def __str__(self):
+        return f"{self.codigo}: {self.nombre} ({self.documento()}) <{self.email}> [{self.estado}]"
+
+    __repr__ = __str__

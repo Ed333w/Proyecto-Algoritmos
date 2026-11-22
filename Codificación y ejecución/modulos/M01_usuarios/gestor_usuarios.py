@@ -119,7 +119,6 @@ class GestorUsuarios:
         self.activos.eliminar(usuario.codigo)
 
     def reactivar(self, codigo):            #RQF-035: reactiva un usuario inactivo. Exige que no esté activo y que exista.
-        """RQF-035."""
         usuario = self.obtener(codigo)
         if usuario.esActivo():
             raise ValueError(f"El usuario {usuario.codigo} ya está activo")
