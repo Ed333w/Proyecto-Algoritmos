@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from modulos.M08_Asistente_Decisiones import ATRASO, SIN_UNIDADES, REINCIDENTE
+from modulos.M08_Asistente_Decisiones import (ATRASO, SIN_UNIDADES, REINCIDENTE, RECURSO_DAÑADO,
+                                              REPARACION_DEMORADA, RECURSO_SIN_USO, COMPRAR, REPARAR)
 from persistencia.datos_masivos import crearSistemaMasivo
 
 
@@ -47,10 +48,12 @@ def test_rqf046_cuello(caso, masivo, cronometro):
 # ---- RQF-047 Prioridad de compras ----
 def test_rqf047_exitoso(caso, demo):
     caso.inicio("RQF-047", "Exitoso", "Top 3 de compras de la demo",
-                "Primero la sala R0003 (2 personas en fila y 1 unidad): índice 2,5")
+                "Primero la sala R0003 (2 personas en fila y 1 unidad): índice 2,5; después la laptop dañada "
+                "R0011 (1 en fila) como 'Reparar o reponer'")
     top = demo.asistente.priorizarCompras(3)
-    caso.resultado(", ".join(f"{r.codigo} índice {i}" for r, i, *_ in top))
-    assert top[0][0].codigo == "R0003" and top[0][1] == 2.5
+    caso.resultado(", ".join(f"{r.codigo} índice {i} ({accion})" for r, i, *_, accion in top))
+    assert top[0][0].codigo == "R0003" and top[0][1] == 2.5 and top[0][5] == COMPRAR
+    assert top[1][0].codigo == "R0011" and top[1][5] == REPARAR
 
 
 def test_rqf047_borde(caso, base):
@@ -84,14 +87,16 @@ def test_rqf048_exitoso(caso, demo):
 
 
 def test_rqf048_borde(caso, demo):
-    caso.inicio("RQF-048", "Borde", "Recurso sin unidades ni préstamos (R0006) y recurso de baja",
-                "R0006: no se libera solo (días = None); el de baja da error")
+    caso.inicio("RQF-048", "Borde", "Recurso sin unidades ni préstamos (R0006), recurso de baja y código inexistente",
+                "R0006: no se libera solo (días = None); el de baja no se predice (no operativo); el inexistente da error")
     r = demo.asistente.predecirDisponibilidad("R0006")
     demo.darDeBajaRecurso("R0006")
+    baja = demo.asistente.predecirDisponibilidad("R0006")
     with pytest.raises(ValueError) as e:
-        demo.asistente.predecirDisponibilidad("R0006")
-    caso.resultado(f"días {r['dias']}, muestras {r['muestras']}; {e.value}")
-    assert r["dias"] is None and not r["disponibleAhora"]
+        demo.asistente.predecirDisponibilidad("R9999")
+    caso.resultado(f"días {r['dias']}, muestras {r['muestras']}; de baja: operativo={baja['operativo']} "
+                   f"({baja['condicion']}); {e.value}")
+    assert r["dias"] is None and not r["disponibleAhora"] and not baja["operativo"] and baja["dias"] is None
 
 
 def test_rqf048_cuello(caso, masivo, cronometro):
@@ -108,20 +113,31 @@ def test_rqf048_cuello(caso, masivo, cronometro):
 # ---- RQF-049 Alertas priorizadas ----
 def test_rqf049_exitoso(caso, demo):
     caso.inicio("RQF-049", "Exitoso", "Alertas de la demo en orden de urgencia",
-                "Atraso de P0007, sala sin unidades con 2 en fila, R0004 en Norte y U005 reincidente")
+                "Atraso de P0007, laptop R0011 dañada con 1 en fila, sala sin unidades con 2 en fila, R0004 en Norte, "
+                "U005 reincidente y computador R0012 con 20 días en reparación")
     alertas = demo.asistente.alertasPriorizadas()
     caso.resultado(" | ".join(f"{a.urgencia} {a.tipo}" for a in alertas))
-    assert [a.tipo for a in alertas] == [ATRASO, SIN_UNIDADES, SIN_UNIDADES, REINCIDENTE]
+    assert [a.tipo for a in alertas] == [ATRASO, RECURSO_DAÑADO, SIN_UNIDADES, SIN_UNIDADES, REINCIDENTE,
+                                         REPARACION_DEMORADA]
 
 
 def test_rqf049_borde(caso, base):
-    caso.inicio("RQF-049", "Borde", "Sistema sin problemas; luego un usuario con 1 solo atraso",
-                "Sin alertas; con 1 atraso aparece la alerta de atraso pero no la de reincidente")
+    caso.inicio("RQF-049", "Borde", "Sistema sin problemas; un usuario con 1 solo atraso; recursos dañado sin demanda, "
+                "en reparación hace 3 días, sin uso y dado de baja",
+                "Sin alertas; atraso sí y reincidente no; dañado sin demanda con urgencia baja (50), sin uso (20); "
+                "la reparación reciente y el dado de baja no generan alerta")
     vacio = base.asistente.alertasPriorizadas()
     base.prestamos.registrarPrestamo("U001", "R0001", "Centro", fechaPrestamo=datetime.now() - timedelta(days=16))
     tipos = [a.tipo for a in base.asistente.alertasPriorizadas()]
-    caso.resultado(f"vacío {vacio}; después {tipos}")
+    hace = datetime.now() - timedelta(days=3)
+    for nombre, condicion in (("Libro A", "Dañado"), ("Libro B", "En reparación"), ("Libro C", "Sin uso"),
+                              ("Libro D", "Dado de baja")):
+        codigo = base.recursos.registrarLibro(nombre, "X", "978-2", 2020)
+        base.cambiarCondicionRecurso(codigo, condicion, hace)
+    condicion = [(a.urgencia, a.tipo) for a in base.asistente.alertasPriorizadas() if a.tipo != ATRASO]
+    caso.resultado(f"vacío {vacio}; después {tipos}; por condición {condicion}")
     assert vacio == [] and tipos == [ATRASO]
+    assert condicion == [(50, RECURSO_DAÑADO), (20, RECURSO_SIN_USO)]
 
 
 def test_rqf049_cuello(caso, masivo, cronometro):

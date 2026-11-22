@@ -11,13 +11,13 @@ datos propias.
 |---|---|
 | `Analisis y planeación/` | Informes de entrega y documentación de casos de prueba |
 | `Diseño/` | Diagrama de clases y modelos |
-| `Codificación y ejecución/` | Código, pruebas y datos de prueba — ver [COMO_EJECUTAR.md](Codificación%20y%20ejecución/COMO_EJECUTAR.md) |
+| `Codificación y ejecución/` | Código, pruebas y datos de prueba — ver [Como ejcutar.md](Codificación%20y%20ejecución/Como%20ejcutar.md) |
 | `.github/workflows/` | CI/CD con GitHub Actions |
 
 ```bash
 cd "Codificación y ejecución"
 python main.py              # programa
-python -m pytest            # 199 pruebas
+python -m pytest            # 200 pruebas
 ```
 
 Equipo: Edward Castillo (M01, M06) · Santiago López (M02, M05) · Esteban Velásquez (M03, M04) ·
@@ -41,7 +41,7 @@ En este proyecto usamos a **Claude** (Anthropic) como herramienta de apoyo, no c
 
 **Cómo lo usamos de forma responsable**
 - No entregamos nada que no entendamos: cada integrante puede explicar su módulo, las estructuras que usa y su complejidad.
-- Todo el código se verificó con las 199 pruebas automáticas y ejecutando el programa.
+- Todo el código se verificó con las 200 pruebas automáticas y ejecutando el programa.
 - Las estructuras de datos son propias; no se usaron librerías externas para resolver el problema.
 - Las decisiones finales y la responsabilidad por el proyecto son del equipo.
 - Declaramos el uso de la IA aquí para ser transparentes con la docente.

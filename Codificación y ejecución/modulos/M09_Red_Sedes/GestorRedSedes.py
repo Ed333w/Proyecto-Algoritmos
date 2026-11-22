@@ -9,6 +9,7 @@ arista no dirigida. La distancia se mide en tramos (número de conexiones).
 """
 
 from estructuras import Grafo
+from modulos.M07_Inventario import validarOperativo
 
 HOLGURA_TRAMOS = 3
 
@@ -46,7 +47,7 @@ class GestorRedSedes:
         """(sede, tramos, unidades) de la sede alcanzable más cercana con unidades, o None."""
         self._sincronizar()
         origen = self.recursos.validarSede(sedeActual)
-        recurso = self.recursos.validarVigente(codigoRecurso)
+        recurso = validarOperativo(self.recursos, codigoRecurso)   # un recurso dañado no se busca en otra sede
         for sede, tramos in self.grafo.recorridoAmplitud(origen):
             unidades = self.inventario.obtenerDisponibilidad(recurso.codigo, sede)
             if unidades > 0:

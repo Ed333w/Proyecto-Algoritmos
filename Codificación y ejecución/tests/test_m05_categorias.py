@@ -22,25 +22,25 @@ def _arbolProfundo(niveles, hijasPorNivel=2):
 
 # ---- RQF-025 Crear categoría o subcategoría ----
 def test_rqf025_exitoso(caso, demo):
-    caso.inicio("RQF-025", "Exitoso", "Crear 'Optica' dentro de Fisica (C006)",
-                "Queda en el nivel 2 con ruta Ciencias > Fisica > Optica")
-    demo.categorias.registrarCategoria("C007", "Optica", "C006")
-    c = demo.categorias.obtener("C007")
+    caso.inicio("RQF-025", "Exitoso", "Crear 'Optica' dentro de Fisica (C016)",
+                "Queda en el nivel 4 con ruta Material de estudio > Libros > Ciencias > Fisica > Optica")
+    demo.categorias.registrarCategoria("C017", "Optica", "C016")
+    c = demo.categorias.obtener("C017")
     caso.resultado(f"{c.ruta()}, nivel {c.nivel()}")
-    assert c.ruta() == "Ciencias > Fisica > Optica" and c.nivel() == 2
+    assert c.ruta() == "Material de estudio > Libros > Ciencias > Fisica > Optica" and c.nivel() == 4
 
 
 def test_rqf025_borde(caso, demo):
     caso.inicio("RQF-025", "Borde", "Código repetido, padre inexistente, nombre repetido bajo el mismo padre y código vacío",
                 "Rechaza los cuatro; el mismo nombre en otro padre sí se permite")
     errores = []
-    for args in (("C001", "Otra"), ("C010", "X", "C999"), ("C010", "computacion", "C002"), ("", "X")):
+    for args in (("C001", "Otra"), ("C020", "X", "C999"), ("C020", "laptops", "C009"), ("", "X")):
         with pytest.raises(ValueError) as e:
             demo.categorias.registrarCategoria(*args)
         errores.append(str(e.value))
-    demo.categorias.registrarCategoria("C010", "Computacion", "C001")
-    caso.resultado("; ".join(errores) + "; 'Computacion' dentro de Ciencias aceptada")
-    assert demo.categorias.obtenerCantidad() == 7
+    demo.categorias.registrarCategoria("C020", "Laptops", "C012")
+    caso.resultado("; ".join(errores) + "; 'Laptops' dentro de Libros aceptada")
+    assert demo.categorias.obtenerCantidad() == 17
 
 
 def test_rqf025_cuello(caso, cronometro):
@@ -55,16 +55,16 @@ def test_rqf025_cuello(caso, cronometro):
 
 # ---- RQF-026 Consultar subárbol ----
 def test_rqf026_exitoso(caso, demo):
-    caso.inicio("RQF-026", "Exitoso", "Consultar Ingenieria (C002) con todo lo que cuelga",
-                "Ingenieria > Computacion > Programacion y sus 4 recursos")
-    nodos = [(c.nombre, p) for c, p in demo.categorias.subarbol("C002")]
-    recursos = [r.codigo for r in demo.recursos.listarPorCategoria("C002")]
+    caso.inicio("RQF-026", "Exitoso", "Consultar Equipos (C009) con todo lo que cuelga",
+                "Equipos > Computadores y Laptops, y sus 5 recursos (incluidos los que no están operativos)")
+    nodos = [(c.nombre, p) for c, p in demo.categorias.subarbol("C009")]
+    recursos = [r.codigo for r in demo.recursos.listarPorCategoria("C009")]
     caso.resultado(f"{nodos}; recursos {recursos}")
-    assert nodos == [("Ingenieria", 0), ("Computacion", 1), ("Programacion", 2)] and len(recursos) == 4
+    assert nodos == [("Equipos", 0), ("Computadores", 1), ("Laptops", 1)] and len(recursos) == 5
 
 
 def test_rqf026_borde(caso, demo):
-    caso.inicio("RQF-026", "Borde", "Consultar una hoja (C005) y un código inexistente",
+    caso.inicio("RQF-026", "Borde", "Consultar una hoja (C005, Sala con televisor) y un código inexistente",
                 "La hoja devuelve solo ella misma; el inexistente da error")
     hoja = demo.categorias.subarbol("c005")
     with pytest.raises(ValueError) as e:
@@ -85,7 +85,7 @@ def test_rqf026_cuello(caso, cronometro):
 
 # ---- RQF-027 Índice AVL ----
 def test_rqf027_exitoso(caso, demo):
-    caso.inicio("RQF-027", "Exitoso", "Índice de las 6 categorías de la demo",
+    caso.inicio("RQF-027", "Exitoso", "Índice de las 16 categorías de la demo",
                 "Recorrido en orden por código y AVL balanceado")
     codigos = [c.codigo for c in demo.categorias.listarPorCodigo()]
     caso.resultado(f"{codigos}, altura {demo.categorias.alturaIndice()}, balanceado {demo.categorias.indice.estaBalanceado()}")

@@ -5,22 +5,34 @@ decidir qué mover, qué comprar y qué atender primero. Todo se calcula con los
 datos reales de los demás módulos (inventario, historial, filas y atrasos).
 
 - RQF-046 Redistribución: algoritmo voraz con dos montículos de máximos
-  (sedes con sobrante y sedes con faltante).
+  (sedes con sobrante y sedes con faltante). Solo recursos operativos.
 - RQF-047 Prioridad de compra: montículo de máximos por demanda insatisfecha.
-- RQF-048 Predicción: promedio de duración de los préstamos ya devueltos.
-- RQF-049 Alertas: cola de prioridad (montículo de máximos) por urgencia.
-- RQF-051 Vencimientos: montículo de mínimos por fecha límite.
+  Un recurso dañado o en reparación con demanda aparece como "Reparar o reponer".
+- RQF-048 Predicción: promedio de duración de los préstamos ya devueltos. Un
+  recurso que no está operativo no se predice: se informa su condición.
+- RQF-049 Alertas: cola de prioridad (montículo de máximos) por urgencia. Incluye
+  los recursos dañados, en reparación demorada y sin uso.
+- RQF-051 Vencimientos: montículo de mínimos por fecha límite; al abrir el
+  programa también se resume cuántos recursos no están operativos.
+
+Los recursos que no están operativos nunca se recomiendan (ni para mover ni para
+comprar como si estuvieran sanos), pero tampoco se pierden de vista: el asistente
+avisa de ellos para decidir qué reparar y qué retirar.
 """
 
 from datetime import timedelta
 
 from estructuras import Monticulo, TablaHash
 from modulos.comun import validarEntero, ahoraSiFalta
+from modulos.M07_Inventario import (OPERATIVO, DAÑADO, EN_REPARACION, SIN_USO, CONDICIONES_TEMPORALES,
+                                    GestorCondiciones, validarOperativo)
 from modulos.M03_Prestamos import DIAS_LIMITE
 
 VENTANA_DIAS = 30           # "préstamos recientes" = últimos 30 días
 PESO_FILA = 2               # una persona esperando pesa más que un préstamo ya atendido
 MAX_MUESTRAS_CONFIANZA = 10
+DIAS_REPARACION_DEMORADA = 15   # en reparación por más de esto -> alerta
+COMPRAR, REPARAR = "Comprar más unidades", "Reparar o reponer"
 
 
 class Traslado:
@@ -53,16 +65,24 @@ class Alerta:
 
 
 ATRASO, SIN_UNIDADES, REINCIDENTE = "Atraso", "Sin unidades", "Usuario reincidente"
+RECURSO_DAÑADO, REPARACION_DEMORADA, RECURSO_SIN_USO = (
+    "Recurso dañado", "Reparación demorada", "Recurso sin uso")
+
+
+def _desde(dias):
+    return "desde hoy" if dias == 0 else f"hace {dias} día(s)"
 
 
 class AsistenteDecisiones:
 
-    def __init__(self, gestorUsuarios, gestorRecursos, gestorInventario, gestorPrestamos, gestorTurnos):
+    def __init__(self, gestorUsuarios, gestorRecursos, gestorInventario, gestorPrestamos, gestorTurnos,
+                 gestorCondiciones=None):
         self.usuarios = gestorUsuarios
         self.recursos = gestorRecursos
         self.inventario = gestorInventario
         self.prestamos = gestorPrestamos
         self.turnos = gestorTurnos
+        self.condiciones = gestorCondiciones or GestorCondiciones(gestorRecursos, gestorPrestamos, gestorTurnos)
 
     # ---------- apoyo ----------
     def _prestamosRecientes(self, ahora, ventanaDias):
@@ -75,9 +95,16 @@ class AsistenteDecisiones:
         return conteo
 
     def _recursosAnalizar(self, codigoRecurso):
+        """Solo los operativos: los demás nunca se recomiendan."""
         if codigoRecurso:
-            return [self.recursos.validarVigente(codigoRecurso)]
+            return [validarOperativo(self.recursos, codigoRecurso)]
         return [r for r in self.recursos.listarTodos() if r.estaVigente()]
+
+    def _demanda(self, recurso, recientes):
+        """(personas en fila, préstamos recientes) del recurso en todas las sedes."""
+        fila = self.turnos.cantidadEspera(recurso.codigo)
+        usos = sum(recientes.buscar(f"{recurso.codigo}|{s}", 0) for s in self.recursos.nombresSedes())
+        return fila, usos
 
     @staticmethod
     def _repartirProporcional(total, pesos):
@@ -128,38 +155,52 @@ class AsistenteDecisiones:
 
     def aplicarTraslado(self, traslado):
         """Ejecuta el traslado y atiende la fila de la sede que recibe. Devuelve los préstamos asignados."""
-        self.recursos.validarVigente(traslado.codigoRecurso)
+        validarOperativo(self.recursos, traslado.codigoRecurso)
         self.inventario.trasladar(traslado.codigoRecurso, traslado.origen, traslado.destino, traslado.unidades)
         return self.prestamos.atenderFila(traslado.codigoRecurso, traslado.destino)
 
     # ---------- RQF-047 ----------
     def priorizarCompras(self, cantidad=5, ventanaDias=VENTANA_DIAS, ahora=None):
-        """[(recurso, índice, personas en fila, préstamos recientes, unidades totales)] de mayor a menor."""
+        """[(recurso, índice, personas en fila, préstamos recientes, unidades totales, acción)]
+        de mayor a menor. Los operativos se proponen para comprar más unidades; los dañados
+        o en reparación con demanda, para reparar o reponer (sus unidades no cuentan)."""
         cantidad = validarEntero(cantidad, "La cantidad", minimo=1)
         ahora = ahoraSiFalta(ahora)
         recientes = self._prestamosRecientes(ahora, ventanaDias)
-        sedes = self.recursos.nombresSedes()
         monticulo = Monticulo(esMaximo=True)
-        for recurso in self._recursosAnalizar(None):
-            fila = self.turnos.cantidadEspera(recurso.codigo)
-            usos = sum(recientes.buscar(f"{recurso.codigo}|{s}", 0) for s in sedes)
-            unidades = self.inventario.totalDisponible(recurso.codigo) + recurso.prestamosActivos
+        for recurso in self.recursos.listarTodos():
+            if recurso.estaVigente():
+                accion = COMPRAR
+                unidades = self.inventario.totalDisponible(recurso.codigo) + recurso.prestamosActivos
+            elif recurso.estado in CONDICIONES_TEMPORALES:
+                accion, unidades = REPARAR, 0
+            else:
+                continue                      # sin uso o dado de baja: no se recomienda
+            fila, usos = self._demanda(recurso, recientes)
             indice = (PESO_FILA * fila + usos) / (unidades + 1)
             if indice > 0:
-                monticulo.insertar(round(indice, 2), (recurso, fila, usos, unidades))
-        return [(r, indice, fila, usos, unidades)
-                for indice, (r, fila, usos, unidades) in monticulo.extraerVarios(cantidad)]
+                monticulo.insertar(round(indice, 2), (recurso, fila, usos, unidades, accion))
+        return [(r, indice, fila, usos, unidades, accion)
+                for indice, (r, fila, usos, unidades, accion) in monticulo.extraerVarios(cantidad)]
 
     # ---------- RQF-048 ----------
     def predecirDisponibilidad(self, codigoRecurso, ahora=None):
         ahora = ahoraSiFalta(ahora)
-        recurso = self.recursos.validarVigente(codigoRecurso)
+        recurso = self.recursos.obtener(codigoRecurso)
+        if not recurso.estaVigente():
+            # No se recomienda ni se estima: no se presta hasta que vuelva a Operativo
+            return {"recurso": recurso, "operativo": False, "condicion": recurso.estado,
+                    "disponibleAhora": False, "sedesConUnidades": [], "muestras": 0,
+                    "promedioDias": None, "confianza": 0.0, "dias": None,
+                    "fechaEstimada": None, "sede": None}
         conUnidades = self.inventario.sedesConUnidades(recurso.codigo)
         duraciones = [p.duracionDias() for p in self.prestamos.historialRecurso(recurso.codigo)
                       if not p.estaActivo()]
         promedio = sum(duraciones) / len(duraciones) if duraciones else float(DIAS_LIMITE)
         resultado = {
             "recurso": recurso,
+            "operativo": True,
+            "condicion": OPERATIVO,
             "disponibleAhora": bool(conUnidades),
             "sedesConUnidades": conUnidades,
             "muestras": len(duraciones),
@@ -203,6 +244,7 @@ class AsistenteDecisiones:
                     cola.insertar(80 + espera, Alerta(80 + espera, SIN_UNIDADES,
                                   f"{recurso.codigo} {recurso.nombre}: sin unidades en {sede} "
                                   f"y {espera} persona(s) en fila"))
+        self._alertasCondicion(cola, ahora)
         tardios = TablaHash()
         for p in self.prestamos.listarTodos():
             if p.fueTarde(ahora):
@@ -213,6 +255,38 @@ class AsistenteDecisiones:
                 cola.insertar(60 + veces, Alerta(60 + veces, REINCIDENTE,
                               f"{usuario.codigo} {usuario.nombre} se ha atrasado {veces} veces"))
         return [alerta for _, alerta in cola.extraerVarios()]
+
+    def _alertasCondicion(self, cola, ahora, ventanaDias=VENTANA_DIAS):
+        """Avisos de los recursos que no están operativos (parte del RQF-049).
+
+        - Dañado con demanda (fila o préstamos recientes): 90 + demanda (hasta 99).
+          Va justo debajo de los atrasos: hay gente que lo necesita y no se puede prestar.
+        - Dañado sin demanda: 50.
+        - En reparación por más de DIAS_REPARACION_DEMORADA días: 40 + días de más (hasta 49).
+        - Sin uso: 20 (decidir si se retira o se pasa a otra sede).
+        Los dados de baja ya están decididos y no generan alerta."""
+        recientes = self._prestamosRecientes(ahora, ventanaDias)
+        for recurso in self.condiciones.listarNoOperativos():
+            dias = self.condiciones.diasEnCondicion(recurso.codigo, ahora)
+            if recurso.estado == DAÑADO:
+                fila, usos = self._demanda(recurso, recientes)
+                demanda = PESO_FILA * fila + usos
+                if demanda:
+                    urgencia = 90 + min(demanda, 9)
+                    detalle = (f"{recurso.codigo} {recurso.nombre}: dañado {_desde(dias)} con demanda "
+                               f"({fila} en fila, {usos} préstamo(s) en {ventanaDias} días). Reparar o reponer")
+                else:
+                    urgencia = 50
+                    detalle = f"{recurso.codigo} {recurso.nombre}: dañado {_desde(dias)}, sin demanda por ahora"
+                cola.insertar(urgencia, Alerta(urgencia, RECURSO_DAÑADO, detalle))
+            elif recurso.estado == EN_REPARACION and dias > DIAS_REPARACION_DEMORADA:
+                urgencia = 40 + min(dias - DIAS_REPARACION_DEMORADA, 9)
+                cola.insertar(urgencia, Alerta(urgencia, REPARACION_DEMORADA,
+                              f"{recurso.codigo} {recurso.nombre}: lleva {dias} días en reparación"))
+            elif recurso.estado == SIN_USO:
+                cola.insertar(20, Alerta(20, RECURSO_SIN_USO,
+                              f"{recurso.codigo} {recurso.nombre}: sin uso {_desde(dias)}; "
+                              f"decidir si se retira o se pasa a otra sede"))
 
     # ---------- RQF-051 ----------
     def vencimientosProximos(self, dias=2, ahora=None):
@@ -225,3 +299,8 @@ class AsistenteDecisiones:
             if 0 <= restantes <= dias:
                 monticulo.insertar(p.fechaLimite(), (p, restantes))
         return [dato for _, dato in monticulo.extraerVarios()]
+
+    def resumenNoOperativos(self):
+        """RQF-051 (aviso al abrir): [(condición, cantidad)] de los recursos que no están operativos
+        (los dados de baja no se cuentan: ya están decididos)."""
+        return [(c, n) for c, n in self.condiciones.resumen() if c in (DAÑADO, EN_REPARACION, SIN_USO)]

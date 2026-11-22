@@ -1,10 +1,10 @@
 # Maria Fernanda Morales
 
-#M07 - Inventario
+# M07 - Inventario
 
-# El inventario se representa como una matriz de sedes x recursos, donde cada celda contiene la 
-# cantidad de unidades disponibles de un recurso en una sede. Se usan tablas hash para mapear 
-# nombres de sedes y códigos de recursos a índices de filas y columnas, respectivamente. 
+# El inventario se representa como una matriz de sedes x recursos, donde cada celda contiene la
+# cantidad de unidades disponibles de un recurso en una sede. Se usan tablas hash para mapear
+# nombres de sedes y códigos de recursos a índices de filas y columnas, respectivamente.
 # Se permite redimensionar la matriz cuando se agregan más recursos que la capacidad inicial.
 
 

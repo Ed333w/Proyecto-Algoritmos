@@ -1,4 +1,4 @@
-"""M07 · Inventario: RQF-009, 010 y 045."""
+"""M07 · Inventario: RQF-008 (condición del recurso, baja lógica), 009, 010 y 045."""
 
 import pytest
 
@@ -12,6 +12,72 @@ def _matrizGrande(sedes, recursos):
     for i in range(recursos):
         s.recursos.registrarLibro(f"L{i}", "A", "I", 2000)
     return s
+
+
+# ---- RQF-008 Dar de baja recurso: cambio de condición desde Inventario; nunca se borra ----
+def test_rqf008_exitoso(caso, demo):
+    caso.inicio("RQF-008", "Exitoso", "Marcar R0006 como Dañado (desde Inventario) y después volverlo a Operativo",
+                "Mientras está dañado: sale del catálogo, no se presta y sigue registrado con su historial; "
+                "al volver a Operativo regresa al catálogo")
+    total = demo.recursos.obtenerCantidad()
+    demo.cambiarCondicionRecurso("R0006", "Dañado")
+    with pytest.raises(ValueError) as e:
+        demo.prestamos.registrarPrestamo("U001", "R0006", "Centro")
+    en_catalogo = any(r.codigo == "R0006" for r in demo.recursos.catalogoOrdenado())
+    sigue = demo.recursos.buscarxCodigo("R0006") is not None and demo.recursos.obtenerCantidad() == total
+    demo.cambiarCondicionRecurso("R0006", "operativo")
+    vuelve = any(r.codigo == "R0006" for r in demo.recursos.catalogoOrdenado())
+    caso.resultado(f"dañado: en catálogo={en_catalogo}, sigue registrado={sigue}; préstamo rechazado: {e.value}; "
+                   f"operativo de nuevo: en catálogo={vuelve}, estado {demo.recursos.obtener('R0006').estado}")
+    assert not en_catalogo and sigue and vuelve and demo.recursos.obtener("R0006").estaVigente()
+
+
+def test_rqf008_borde(caso, demo):
+    caso.inicio("RQF-008", "Borde", "R0004 con préstamos activos; R0006 con una persona en fila marcado Dañado y luego "
+                "Operativo; una sala con fila dada de baja; condición repetida y condición inválida",
+                "R0004 se rechaza; la fila de R0006 se conserva, no recibe turnos nuevos y se atiende al cargar "
+                "unidades ya operativo; la baja de la sala cancela su fila; errores claros")
+    errores = []
+    with pytest.raises(ValueError) as e:
+        demo.cambiarCondicionRecurso("R0004", "Dañado")
+    errores.append(str(e.value))
+    demo.turnos.solicitarTurno("U001", "R0006", "Centro")
+    demo.cambiarCondicionRecurso("R0006", "Dañado")
+    filaConservada = demo.turnos.cantidadEspera("R0006", "Centro")
+    with pytest.raises(ValueError):
+        demo.turnos.solicitarTurno("U003", "R0006", "Centro")
+    for llamada in (lambda: demo.cambiarCondicionRecurso("R0006", "dañado"),
+                    lambda: demo.cambiarCondicionRecurso("R0006", "Perdido")):
+        with pytest.raises(ValueError) as e:
+            llamada()
+        errores.append(str(e.value))
+    demo.cambiarCondicionRecurso("R0006", "Operativo")
+    asignados = demo.fijarUnidades("R0006", "Centro", 1)
+    sala = demo.recursos.registrarSala("Sala B", 4, categoria="C003")
+    demo.turnos.solicitarTurno("U001", sala, "Centro")
+    canceladas = demo.darDeBajaRecurso(sala)
+    caso.resultado(f"fila de R0006 conservada {filaConservada}; al cargar unidades se prestó a "
+                   f"{demo.prestamos.obtener(asignados[0]).codigoUsuario}; baja de {sala} canceló {canceladas}; "
+                   + "; ".join(errores))
+    assert filaConservada == 1 and demo.prestamos.obtener(asignados[0]).codigoUsuario == "U001" and canceladas == 1
+
+
+def test_rqf008_cuello(caso, cronometro):
+    n = 2000
+    caso.inicio("RQF-008", "Cuello de botella", f"Dar de baja la mitad de {n:,} recursos y marcar otro cuarto como Sin uso",
+                "El catálogo (BST) queda con la cuarta parte y ningún recurso se borra")
+    s = Sistema()
+    for i in range(n):
+        s.recursos.registrarLibro(f"Libro {i:05d}", "Autor", f"978-{i}", 2000)
+    todos = s.recursos.listarTodos()
+    with cronometro() as t:
+        for r in todos[::2]:
+            s.darDeBajaRecurso(r.codigo)
+        for r in todos[1::4]:
+            s.cambiarCondicionRecurso(r.codigo, "Sin uso")
+    caso.resultado(f"catálogo {len(s.recursos.catalogo):,}, registrados {s.recursos.obtenerCantidad():,}, "
+                   f"no operativos {len(s.condiciones.listarNoOperativos()):,}, {t.segundos:.3f} s")
+    assert len(s.recursos.catalogo) == n // 4 and s.recursos.obtenerCantidad() == n
 
 
 # ---- RQF-009 Disponibilidad por sede ----

@@ -11,6 +11,7 @@ def _esPrimo(n):
         i += 2
     return True
 
+
 def primoSiguiente(n):
     c = max(2, n)
     while not _esPrimo(c):

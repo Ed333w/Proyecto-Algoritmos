@@ -1,7 +1,8 @@
 """Sistema de Gestión de Recursos Comunitarios Compartidos (Línea 1).
 
 Al iniciar carga lo guardado en la carpeta datos/ (o los datos de demostración
-la primera vez), avisa los préstamos que vencen pronto y abre el menú.
+la primera vez), avisa los préstamos que vencen pronto y los recursos fuera de
+servicio, y abre el menú.
 Al salir guarda todo en archivos de texto.
 
 Variables de entorno opcionales:
@@ -14,7 +15,7 @@ import sys
 
 from interfaz.consola import Sesion, FinDeEntrada, titulo, pausa
 from interfaz import menu_principal
-from interfaz.menu_asistente import mostrarVencimientos
+from interfaz.menu_asistente import mostrarVencimientos, mostrarNoOperativos
 from persistencia import guardar, cargar, hayDatosGuardados
 from persistencia.datos_demo import crearSistemaDemo
 
@@ -42,6 +43,7 @@ def main():
     try:
         titulo(f"AVISO: préstamos que vencen en los próximos {DIAS_AVISO} días")
         mostrarVencimientos(sistema, DIAS_AVISO)
+        mostrarNoOperativos(sistema)
         pausa()
         menu_principal.ejecutar(sesion)
     except (FinDeEntrada, KeyboardInterrupt):

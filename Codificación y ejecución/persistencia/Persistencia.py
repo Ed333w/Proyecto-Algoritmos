@@ -6,19 +6,24 @@ nombre trae ';'). Se guarda al salir y se carga al iniciar.
 
 Orden de carga (cada archivo depende de los anteriores):
 sedes -> conexiones -> categorias -> usuarios -> recursos -> inventario ->
-solicitudes -> prestamos
+solicitudes -> prestamos -> condiciones
+
+La condición de cada recurso (Operativo, Dañado, En reparación, Sin uso, Dado de
+baja) viaja en la columna estado de recursos.txt; condiciones.txt guarda desde qué
+fecha está en esa condición (M07). Si falta (datos de una versión anterior), se carga igual.
 """
 
 import csv
 import os
 
 from modulos import Sistema, Usuario, Prestamo, Solicitud
-from modulos.M02_Recursos import claseDeTipo
+from modulos.M02_Recursos import claseDeTipo, VIGENTE
+from modulos.M07_Inventario import validarCondicion
 from modulos.comun import fechaATexto, textoAFecha
 
 SEPARADOR = ";"
 ARCHIVOS = ("sedes", "conexiones", "categorias", "usuarios", "recursos",
-            "inventario", "solicitudes", "prestamos")
+            "inventario", "solicitudes", "prestamos", "condiciones")
 MAX_DATOS_PROPIOS = 3   # el tipo con más datos propios (Libro y Equipo) tiene 3
 
 ENCABEZADOS = {
@@ -31,6 +36,7 @@ ENCABEZADOS = {
     "solicitudes": ["codigo", "usuario", "recurso", "sede", "fecha", "estado"],
     "prestamos": ["codigo", "usuario", "recurso", "sede", "fechaPrestamo", "diasLimite",
                   "fechaDevolucion", "estado"],
+    "condiciones": ["recurso", "condicion", "desde"],
 }
 
 
@@ -61,6 +67,8 @@ def _filas(sistema):
     yield "prestamos", ([p.codigo, p.codigoUsuario, p.codigoRecurso, p.sede, fechaATexto(p.fechaPrestamo),
                          p.diasLimite, fechaATexto(p.fechaDevolucion), p.estado]
                         for p in sistema.prestamos.listarTodos())
+    yield "condiciones", ([r.codigo, r.estado, fechaATexto(sistema.condiciones.fechaCondicion(r.codigo))]
+                          for r in sistema.condiciones.listarNoOperativos())
 
 
 def guardar(sistema, carpeta):
@@ -126,6 +134,8 @@ def _cargarRecursos(sistema, filas):
         clase = claseDeTipo(tipo)
         datos = {atributo: valor for (atributo, _, _), valor in zip(clase.CAMPOS, fila[6:])}
         recurso = clase(codigo, nombre, categoria or None, textoAFecha(fecha), **datos)
+        if estado != VIGENTE:
+            estado = validarCondicion(estado)      # Dañado, En reparación, Sin uso o Dado de baja (M07)
         recurso.estado = estado
         sistema.recursos.cargarExistente(recurso)
 
@@ -149,10 +159,18 @@ def _cargarPrestamos(sistema, filas):
         sistema.prestamos.cargarExistente(prestamo)
 
 
+def _cargarCondiciones(sistema, filas):
+    for _, (codigo, condicion, desde) in filas:
+        recurso = sistema.recursos.obtener(codigo)
+        if recurso.estado != condicion:
+            raise ValueError(f"{codigo} figura {condicion} pero en recursos.txt está {recurso.estado}")
+        sistema.condiciones.cargarExistente(codigo, textoAFecha(desde))
+
+
 _CARGADORES = {
     "sedes": _cargarSedes, "conexiones": _cargarConexiones, "categorias": _cargarCategorias,
     "usuarios": _cargarUsuarios, "recursos": _cargarRecursos, "inventario": _cargarInventario,
-    "solicitudes": _cargarSolicitudes, "prestamos": _cargarPrestamos,
+    "solicitudes": _cargarSolicitudes, "prestamos": _cargarPrestamos, "condiciones": _cargarCondiciones,
 }
 
 

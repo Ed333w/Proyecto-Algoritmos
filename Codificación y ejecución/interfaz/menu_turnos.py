@@ -1,12 +1,15 @@
 """Menú M04 · Turnos y fila de espera."""
 
 from modulos.comun import fechaATexto
+from modulos.M07_Inventario import validarOperativo
 from .consola import leer, tabla, ejecutarMenu
 
 
 def solicitar(sesion):
     turnos = sesion.sistema.turnos
-    codigo = turnos.solicitarTurno(leer("Código del usuario: "), leer("Código del recurso: "), leer("Sede: "))
+    usuario, recurso = leer("Código del usuario: "), leer("Código del recurso: ")
+    validarOperativo(sesion.sistema.recursos, recurso)   # un recurso dañado no recibe turnos nuevos
+    codigo = turnos.solicitarTurno(usuario, recurso, leer("Sede: "))
     print(f"\n  Turno {codigo} asignado, posición {turnos.posicion(codigo)} en la fila")
 
 

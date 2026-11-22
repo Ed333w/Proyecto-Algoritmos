@@ -1,6 +1,6 @@
 """Conjunto de datos de prueba con más de 500 registros (lineamiento del proyecto).
 
-Se genera siempre igual (semilla fija). Para crear la carpeta datos_prueba/:
+Se genera siempre igual (semilla fija). Para crear la carpeta «datos de prueba»:
 
     python -m persistencia.datos_masivos
 
@@ -15,6 +15,8 @@ from datetime import datetime, timedelta
 
 from modulos import Sistema
 from modulos.M03_Prestamos import SinUnidadesError
+from persistencia.categorias_base import (LIBROS, COMPUTADORES, LAPTOPS, CATEGORIAS_BASE, ESPACIOS,
+                                          crearCategoriasBase)
 
 NOMBRES = ("Ana", "Luis", "Maria", "Carlos", "Sofia", "Juan", "Valentina", "Andres", "Camila",
            "Diego", "Laura", "Mateo", "Paula", "Santiago", "Daniela", "Felipe")
@@ -36,31 +38,33 @@ def crearSistemaMasivo(usuarios=300, recursos=200, prestamos=600, solicitudes=40
         s.red.conectar(SEDES[i], SEDES[i + 1])
     s.red.conectar("Centro", "Sur")
 
-    raices = ("Ciencias", "Ingenieria", "Humanidades", "Artes", "Economia")
-    numero = 0
-    for raiz in raices:
-        numero += 1
-        codigoRaiz = f"C{numero:03d}"
-        s.categorias.registrarCategoria(codigoRaiz, raiz)
-        for j in range(5):
-            numero += 1
-            s.categorias.registrarCategoria(f"C{numero:03d}", f"{raiz} {j + 1}", codigoRaiz)
-    codigosCategorias = s.categorias.indice.clavesInorden()
+    # Categorías: las base (tipos de sala, Computadores, Laptops, Libros) y una
+    # subcategoría de Libros por tema
+    crearCategoriasBase(s)
+    tiposSala = [codigo for codigo, _, padre in CATEGORIAS_BASE if padre == ESPACIOS]
+    categoriaTema = {}
+    for numero, tema in enumerate(TEMAS, start=len(CATEGORIAS_BASE) + 1):
+        categoriaTema[tema] = s.categorias.registrarCategoria(f"C{numero:03d}", tema, LIBROS)
 
     for i in range(usuarios):
         nombre = f"{azar.choice(NOMBRES)} {azar.choice(APELLIDOS)}"
         s.usuarios.registrar(nombre, f"usuario{i + 1}@uni.edu", "CC" if i % 10 else "TI", str(1000000000 + i))
 
     for i in range(recursos):
-        tema, categoria = azar.choice(TEMAS), azar.choice(codigosCategorias)
+        tema = azar.choice(TEMAS)
         tipo = i % 3
         if tipo == 0:
             codigo = s.recursos.registrarLibro(f"{tema} {i + 1}", f"Autor {i % 40}", f"978-{i:05d}",
-                                               azar.randint(1980, 2024), categoria)
+                                               azar.randint(1980, 2024), categoriaTema[tema])
         elif tipo == 1:
-            codigo = s.recursos.registrarEquipo(f"Equipo {tema} {i + 1}", "Portatil", f"M{i}", "Bodega", categoria)
+            if azar.random() < 0.5:
+                codigo = s.recursos.registrarEquipo(f"Laptop {i + 1}", "Portatil", f"M{i}", "Bodega", LAPTOPS)
+            else:
+                codigo = s.recursos.registrarEquipo(f"Computador {i + 1}", "Computador", f"M{i}",
+                                                    "Sala de computo", COMPUTADORES)
         else:
-            codigo = s.recursos.registrarSala(f"Sala {tema} {i + 1}", azar.randint(4, 40), "Tablero", categoria)
+            codigo = s.recursos.registrarSala(f"Sala {i + 1}", azar.randint(4, 40), "Tablero",
+                                              azar.choice(tiposSala))
         for sede in azar.sample(SEDES, 3):
             s.inventario.fijarUnidades(codigo, sede, azar.randint(0, 4))
 
@@ -81,6 +85,13 @@ def crearSistemaMasivo(usuarios=300, recursos=200, prestamos=600, solicitudes=40
         if azar.random() < 0.7:
             devolucion = inicio + timedelta(days=azar.randint(1, 20))
             s.prestamos.registrarDevolucion(codigo, min(devolucion, hoy))
+
+    # Alrededor del 5 % de los recursos queda fuera de servicio (nunca se borran).
+    # Solo los que no tienen préstamos activos, como exige el cambio de condición (M07).
+    for recurso in s.recursos.listarTodos():
+        if azar.random() < 0.05 and not recurso.prestamosActivos:
+            condicion = azar.choice(("Dañado", "En reparación", "Sin uso"))
+            s.cambiarCondicionRecurso(recurso.codigo, condicion, hoy - timedelta(days=azar.randint(0, 30)))
     s.prestamos.reiniciarDeshacer()
     return s
 
@@ -92,7 +103,7 @@ def contarRegistros(s):
 
 if __name__ == "__main__":
     from persistencia import guardar
-    carpeta = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), "..", "datos_prueba")
+    carpeta = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), "..", "datos de prueba")
     sistema = crearSistemaMasivo()
     guardar(sistema, carpeta)
     print(f"Datos de prueba en {os.path.abspath(carpeta)}: {contarRegistros(sistema)} registros "

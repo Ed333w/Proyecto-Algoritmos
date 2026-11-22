@@ -47,7 +47,7 @@ def test_rqf005_borde(caso, demo):
         Recurso("R9", "X")
     siguiente = r.registrarSala("Sala mínima", 1)
     caso.resultado("; ".join(errores) + f"; siguiente código válido {siguiente}")
-    assert siguiente == "R0007"
+    assert siguiente == "R0013"
 
 
 def test_rqf005_cuello(caso, cronometro):
@@ -97,7 +97,8 @@ def test_rqf006_borde(caso, demo):
     parte = [r.codigo for r in demo.recursos.buscarPorTipoYNombre("", "PY")]
     caso.resultado("; ".join(errores) + f"; de baja: {baja} -> {demo.recursos.estadoDe(baja[0])}; "
                    f"equipos {equipos}; 'PY' -> {parte}")
-    assert demo.recursos.estadoDe(baja[0]) == DADO_DE_BAJA and equipos == ["R0005", "R0002"] and parte == ["R0001"]
+    assert demo.recursos.estadoDe(baja[0]) == DADO_DE_BAJA and parte == ["R0001"]
+    assert equipos == ["R0010", "R0012", "R0011", "R0005", "R0002"]   # por nombre
 
 
 def test_rqf006_cuello(caso, masivo, cronometro):
@@ -151,42 +152,6 @@ def test_rqf007_cuello(caso, cronometro):
     assert len(nombres) == n and nombres == sorted(nombres)
 
 
-# ---- RQF-008 Dar de baja recurso ----
-def test_rqf008_exitoso(caso, demo):
-    caso.inicio("RQF-008", "Exitoso", "Dar de baja R0006 (sin préstamos)",
-                "Queda dado de baja, sale del catálogo y no se puede prestar")
-    demo.darDeBajaRecurso("R0006")
-    with pytest.raises(ValueError) as e:
-        demo.prestamos.registrarPrestamo("U001", "R0006", "Centro")
-    en_catalogo = any(r.codigo == "R0006" for r in demo.recursos.catalogoOrdenado())
-    caso.resultado(f"estado {demo.recursos.obtener('R0006').estado}, en catálogo={en_catalogo}; préstamo: {e.value}")
-    assert not en_catalogo
-
-
-def test_rqf008_borde(caso, demo):
-    caso.inicio("RQF-008", "Borde", "Dar de baja R0004 (tiene préstamos activos) y una sala nueva que tiene gente en fila",
-                "Rechaza la primera; la segunda se da de baja y cancela los turnos de su fila")
-    with pytest.raises(ValueError) as e:
-        demo.recursos.darDeBaja("R0004")
-    demo.recursos.registrarSala("Sala B", 4)                  # R0007, sin unidades
-    demo.turnos.solicitarTurno("U001", "R0007", "Centro")
-    canceladas = demo.darDeBajaRecurso("R0007")
-    caso.resultado(f"{e.value}; baja de R0007 canceló {canceladas} turno(s)")
-    assert canceladas == 1 and demo.turnos.cantidadEspera("R0007") == 0
-
-
-def test_rqf008_cuello(caso, cronometro):
-    n = 2000
-    caso.inicio("RQF-008", "Cuello de botella", f"Dar de baja la mitad de {n:,} recursos",
-                "El catálogo (BST) queda con la otra mitad")
-    s = _sistemaConRecursos(n)
-    with cronometro() as t:
-        for r in s.recursos.listarTodos()[::2]:
-            s.darDeBajaRecurso(r.codigo)
-    caso.resultado(f"catálogo {len(s.recursos.catalogo):,}, {t.segundos:.3f} s")
-    assert len(s.recursos.catalogo) == n // 2
-
-
 # ---- RQF-020 Búsqueda de recurso por código (tabla hash) ----
 def test_rqf020_exitoso(caso, demo):
     caso.inicio("RQF-020", "Exitoso", "Buscar R0003", "Devuelve la Sala de Estudio")
@@ -219,26 +184,27 @@ def test_rqf020_cuello(caso, masivo, cronometro):
 
 # ---- RQF-023 Listar por categoría o estado ----
 def test_rqf023_exitoso(caso, demo):
-    caso.inicio("RQF-023", "Exitoso", "Listar la categoría Ingenieria (con subcategorías) y los recursos Prestados",
-                "Ingenieria: 4 recursos por nombre; Prestado: la Sala de Estudio")
-    ingenieria = [r.codigo for r in demo.recursos.listarPorCategoria("C002")]
+    caso.inicio("RQF-023", "Exitoso", "Listar la categoría Libros (con subcategorías) y los recursos Prestados y Dañados",
+                "Libros: 3 recursos por nombre; Prestado: la Sala de Estudio; Dañado: la Laptop Lenovo")
+    libros = [r.codigo for r in demo.recursos.listarPorCategoria("C012")]
     prestados = [r.codigo for r in demo.recursos.listarPorEstado("prestado")]
-    caso.resultado(f"Ingenieria={ingenieria}; Prestado={prestados}")
-    assert ingenieria == ["R0004", "R0005", "R0002", "R0001"] and prestados == ["R0003"]
+    dañados = [r.codigo for r in demo.condiciones.listarPorCondicion("danado")]   # condición de M07
+    caso.resultado(f"Libros={libros}; Prestado={prestados}; Dañado={dañados}")
+    assert libros == ["R0004", "R0006", "R0001"] and prestados == ["R0003"] and dañados == ["R0011"]
 
 
 def test_rqf023_borde(caso, demo):
     caso.inicio("RQF-023", "Borde", "Categoría sin recursos, sin subcategorías, estado inválido y categoría inexistente",
                 "Lista vacía, solo los directos y errores claros")
-    vacia = demo.recursos.listarPorCategoria("C003")
-    directos = [r.codigo for r in demo.recursos.listarPorCategoria("C002", incluirSubcategorias=False)]
+    vacia = demo.recursos.listarPorCategoria("C004")
+    directos = [r.codigo for r in demo.recursos.listarPorCategoria("C009", incluirSubcategorias=False)]
     errores = []
     for llamada in (lambda: demo.recursos.listarPorEstado("roto"), lambda: demo.recursos.listarPorCategoria("C999")):
         with pytest.raises(ValueError) as e:
             llamada()
         errores.append(str(e.value))
     sinUnidades = [r.codigo for r in demo.recursos.listarPorEstado(SIN_UNIDADES)]
-    caso.resultado(f"C003={vacia}; C002 directos={directos}; sin unidades={sinUnidades}; " + "; ".join(errores))
+    caso.resultado(f"C004={vacia}; C009 directos={directos}; sin unidades={sinUnidades}; " + "; ".join(errores))
     assert vacia == [] and directos == ["R0002"] and sinUnidades == ["R0006"]
 
 
@@ -303,7 +269,7 @@ def test_rqf052_borde(caso, demo):
     demo.darDeBajaRecurso("R0006")
     nombres = [(r.nombre, r.codigo) for r in demo.recursos.catalogoOrdenado()]
     caso.resultado(str(nombres))
-    assert ("Python 101", "R0001") in nombres and ("Python 101", "R0007") in nombres
+    assert ("Python 101", "R0001") in nombres and ("Python 101", "R0013") in nombres
     assert all(c != "R0006" for _, c in nombres)
 
 

@@ -45,10 +45,10 @@ def test_rqf021_cuello(caso, masivo, cronometro):
 
 # ---- RQF-022 Por antigüedad ----
 def test_rqf022_exitoso(caso, demo):
-    caso.inicio("RQF-022", "Exitoso", "Ordenar la demo por fecha de registro", "R0001 a R0006 (se registraron en ese orden)")
+    caso.inicio("RQF-022", "Exitoso", "Ordenar la demo por fecha de registro", "R0001 a R0012 (se registraron en ese orden)")
     codigos = [r.codigo for r in demo.informes.porAntiguedad()]
     caso.resultado(str(codigos))
-    assert codigos == ["R0001", "R0002", "R0003", "R0004", "R0005", "R0006"]
+    assert codigos == [f"R{i:04d}" for i in range(1, 13)]
 
 
 def test_rqf022_borde(caso):
@@ -95,7 +95,7 @@ def test_rqf024_borde(caso, demo):
     with pytest.raises(ValueError) as e:
         demo.informes.buscarPorNombre(" ")
     caso.resultado(f"inexistente {demo.informes.buscarPorNombre('Quijote')}; {e.value}; homónimos {homonimos}")
-    assert demo.informes.buscarPorNombre("Quijote") == [] and homonimos == ["R0001", "R0007"]
+    assert demo.informes.buscarPorNombre("Quijote") == [] and homonimos == ["R0001", "R0013"]
 
 
 def test_rqf024_cuello(caso, cronometro):
@@ -172,10 +172,10 @@ def test_rqf032_cuello(caso, masivo, cronometro):
 # ---- RQF-033 Demanda por categoría ----
 def test_rqf033_exitoso(caso, demo):
     caso.inicio("RQF-033", "Exitoso", "Demanda agrupada en la categoría principal",
-                "Ingenieria 10 préstamos y 1 sin categoría (la sala)")
+                "Material de estudio 10 préstamos y Espacios de estudio 1 (la sala)")
     r = demo.informes.demandaPorCategoria(agruparEnPrincipal=True)
     caso.resultado(str(r))
-    assert r == [("Ingenieria", 10), ("Sin categoría", 1)]
+    assert r == [("Material de estudio", 10), ("Espacios de estudio", 1)]
 
 
 def test_rqf033_borde(caso):
@@ -185,7 +185,7 @@ def test_rqf033_borde(caso):
 
 
 def test_rqf033_cuello(caso, masivo, cronometro):
-    caso.inicio("RQF-033", "Cuello de botella", "Demanda por subcategoría con 6.000 préstamos y 30 categorías",
+    caso.inicio("RQF-033", "Cuello de botella", "Demanda por subcategoría con 6.000 préstamos y 26 categorías",
                 "La suma por categoría es igual al total de préstamos")
     with cronometro() as t:
         r = masivo.informes.demandaPorCategoria()
@@ -196,14 +196,14 @@ def test_rqf033_cuello(caso, masivo, cronometro):
 # ---- RQF-034 Informe de inventario ----
 def test_rqf034_exitoso(caso, demo):
     caso.inicio("RQF-034", "Exitoso", "Informe de inventario de la demo",
-                "3 libros (7 unidades), 2 equipos (3) y 1 sala (0)")
+                "3 libros (7 unidades); 5 equipos, 3 operativos (7); 4 salas (3)")
     r = demo.informes.reporteInventario()
     caso.resultado(str(r))
-    assert r == [("Libro", 3, 3, 7), ("Equipo", 2, 2, 3), ("Sala", 1, 1, 0)]
+    assert r == [("Libro", 3, 3, 7), ("Equipo", 5, 3, 7), ("Sala", 4, 4, 3)]
 
 
 def test_rqf034_borde(caso, demo):
-    caso.inicio("RQF-034", "Borde", "Un recurso dado de baja", "Cuenta como registrado pero no como vigente")
+    caso.inicio("RQF-034", "Borde", "Un recurso dado de baja", "Cuenta como registrado pero no como operativo")
     demo.darDeBajaRecurso("R0006")
     libro = demo.informes.reporteInventario()[0]
     caso.resultado(str(libro))

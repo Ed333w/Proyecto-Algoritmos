@@ -10,7 +10,7 @@ from persistencia import guardar, cargar, hayDatosGuardados
 from persistencia.Persistencia import ARCHIVOS
 from persistencia.datos_masivos import crearSistemaMasivo, contarRegistros
 
-CARPETA_PRUEBA = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "datos_prueba")
+CARPETA_PRUEBA = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "datos de prueba")
 
 
 def test_rqf050_exitoso(caso, demo, tmp_path):
@@ -26,6 +26,27 @@ def test_rqf050_exitoso(caso, demo, tmp_path):
     assert iguales and fila == ["U002", "U004"] and nuevo == "U006"
     assert cargado.prestamos.deshacer() is None          # lo cargado no se deshace
     assert cargado.recursos.obtener("R0001").cantidadPrestamos == 4
+
+
+def test_rqf050_condiciones(caso, demo, tmp_path):
+    caso.inicio("RQF-050", "Borde", "Guardar y cargar recursos fuera de servicio; cargar datos de la versión anterior "
+                "(sin condiciones.txt)",
+                "La condición, su fecha, la fila del recurso dañado y el catálogo se recuperan; sin condiciones.txt "
+                "carga igual (la condición viene en recursos.txt)")
+    guardar(demo, tmp_path / "a")
+    cargado = cargar(tmp_path / "a")
+    laptop, pc = cargado.recursos.obtener("R0011"), cargado.recursos.obtener("R0012")
+    original = demo.condiciones.fechaCondicion("R0012").replace(second=0, microsecond=0)
+    fecha = cargado.condiciones.fechaCondicion("R0012")
+    enCatalogo = [r.codigo for r in cargado.recursos.catalogoOrdenado() if r.codigo in ("R0011", "R0012")]
+    fila = cargado.turnos.cantidadEspera("R0011", "Centro")
+    os.remove(tmp_path / "a" / "condiciones.txt")
+    viejo = cargar(tmp_path / "a")
+    caso.resultado(f"R0011 {laptop.estado} con {fila} en fila, R0012 {pc.estado} desde {fecha:%Y-%m-%d}; "
+                   f"en catálogo {enCatalogo}; sin condiciones.txt: {len(viejo.condiciones.listarNoOperativos())} "
+                   f"no operativos, fecha {viejo.condiciones.fechaCondicion('R0012')}")
+    assert laptop.estado == "Dañado" and pc.estado == "En reparación" and fecha == original
+    assert enCatalogo == [] and fila == 1 and len(viejo.condiciones.listarNoOperativos()) == 2
 
 
 def test_rqf050_borde(caso, tmp_path):
@@ -59,7 +80,7 @@ def test_rqf050_cuello(caso, tmp_path, cronometro):
 
 
 def test_datos_prueba_mas_de_500(caso):
-    caso.inicio("RQF-050", "Cuello de botella", "Cargar la carpeta datos_prueba incluida en el repositorio",
+    caso.inicio("RQF-050", "Cuello de botella", "Cargar la carpeta «datos de prueba» incluida en el repositorio",
                 "Más de 500 registros, coherentes con el inventario")
     s = cargar(CARPETA_PRUEBA)
     caso.resultado(f"{contarRegistros(s):,} registros: {s.resumen()}")

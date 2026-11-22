@@ -6,12 +6,12 @@ operaciones que cruzan módulos.
 """
 
 from .M01_usuarios import GestorUsuarios
-from .M02_Recursos import GestorRecursos
+from .M02_Recursos import GestorRecursos, DADO_DE_BAJA
 from .M03_Prestamos import GestorPrestamos
 from .M04_Turnos import GestorTurnos
 from .M05_Categoria import GestorCategorias
 from .M06_informes import GeneradorInformes
-from .M07_Inventario import GestorInventario
+from .M07_Inventario import GestorInventario, GestorCondiciones
 from .M08_Asistente_Decisiones import AsistenteDecisiones
 from .M09_Red_Sedes import GestorRedSedes
 
@@ -28,8 +28,9 @@ class Sistema:
                                          self.inventario, self.turnos)               # M03
         self.informes = GeneradorInformes(self.usuarios, self.recursos,
                                           self.prestamos, self.categorias)           # M06
+        self.condiciones = GestorCondiciones(self.recursos, self.prestamos, self.turnos)  # M07
         self.asistente = AsistenteDecisiones(self.usuarios, self.recursos, self.inventario,
-                                             self.prestamos, self.turnos)            # M08
+                                             self.prestamos, self.turnos, self.condiciones)  # M08
         self.red = GestorRedSedes(self.recursos, self.inventario)                    # M09
 
     def fijarUnidades(self, codigoRecurso, sede, cantidad):
@@ -39,10 +40,15 @@ class Sistema:
         self.inventario.fijarUnidades(recurso.codigo, sede, cantidad)
         return self.prestamos.atenderFila(recurso.codigo, sede)
 
+    def cambiarCondicionRecurso(self, codigoRecurso, condicion, fecha=None):
+        """RQF-008 (menú de M07 · Inventario): baja lógica, el recurso nunca se borra.
+        Devuelve (solicitudes canceladas, préstamos asignados)."""
+        _, canceladas, asignados = self.condiciones.cambiar(codigoRecurso, condicion, fecha)
+        return canceladas, asignados
+
     def darDeBajaRecurso(self, codigoRecurso):
-        """RQF-008: baja del recurso y cancelación de quienes lo esperaban."""
-        recurso = self.recursos.darDeBaja(codigoRecurso)
-        return self.turnos.cancelarPorRecurso(recurso.codigo)
+        """RQF-008: atajo para la condición Dado de baja. Devuelve las solicitudes canceladas."""
+        return self.cambiarCondicionRecurso(codigoRecurso, DADO_DE_BAJA)[0]
 
     def resumen(self):
         return (f"{self.usuarios.obtenerCantidad()} usuarios, {self.recursos.obtenerCantidad()} recursos, "

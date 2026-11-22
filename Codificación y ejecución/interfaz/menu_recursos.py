@@ -1,12 +1,22 @@
 """Menú M02 · Recursos y sedes."""
 
-from modulos.M02_Recursos import TIPOS, ESTADOS, claseDeTipo
+from modulos.M02_Recursos import TIPOS, ESTADOS, DADO_DE_BAJA, claseDeTipo
+from modulos.M07_Inventario import CONDICIONES, OPERATIVO, validarCondicion
 from .consola import leer, leerEntero, tabla, ejecutarMenu
+
+# Para listar por estado: los de M02 (Disponible, Prestado, Sin unidades) y las
+# condiciones de M07 (Dañado, En reparación, Sin uso, Dado de baja)
+ESTADOS_LISTADO = tuple(e for e in ESTADOS if e != DADO_DE_BAJA) + tuple(c for c in CONDICIONES if c != OPERATIVO)
+
+
+def estadoVisible(sistema, recurso):
+    """Si no está operativo se muestra su condición real (M02 los muestra todos como 'Dado de baja')."""
+    return sistema.recursos.estadoDe(recurso) if recurso.estaVigente() else recurso.estado
 
 
 def mostrarRecursos(sistema, recursos):
     tabla(("Código", "Tipo", "Nombre", "Categoría", "Estado", "Unidades"),
-          [(r.codigo, r.TIPO, r.nombre, r.categoria or "-", sistema.recursos.estadoDe(r),
+          [(r.codigo, r.TIPO, r.nombre, r.categoria or "-", estadoVisible(sistema, r),
             sistema.inventario.totalDisponible(r.codigo)) for r in recursos])
 
 
@@ -51,7 +61,7 @@ def consultar(sesion):
     print()
     for campo, valor in recurso.obtenerInfo().items():
         print(f"  {campo:<20} {valor}")
-    print(f"  {'situación':<20} {sistema.recursos.estadoDe(recurso)}")
+    print(f"  {'situación':<20} {estadoVisible(sistema, recurso)}")
     print("\n  Unidades disponibles por sede:")
     tabla(("Sede", "Unidades"), sistema.inventario.disponibilidadPorSede(recurso.codigo))
 
@@ -71,10 +81,16 @@ def actualizar(sesion):
     print(f"\n  {recurso.codigo} actualizado")
 
 
-def darDeBaja(sesion):
-    recurso = elegirRecurso(sesion)
-    canceladas = sesion.sistema.darDeBajaRecurso(recurso.codigo)
-    print(f"\n  {recurso.codigo} {recurso.nombre} dado de baja. Solicitudes canceladas: {canceladas}")
+def fueraDeServicio(sesion):
+    """Solo consulta: desde Recursos no se quita ni se da de baja ningún recurso.
+    La condición (dañado, en reparación, sin uso, dado de baja) se cambia en M07 · Inventario."""
+    sistema = sesion.sistema
+    condiciones = sistema.condiciones
+    tabla(("Código", "Tipo", "Nombre", "Condición", "Desde hace"),
+          [(r.codigo, r.TIPO, r.nombre, r.estado, f"{condiciones.diasEnCondicion(r.codigo)} día(s)")
+           for r in condiciones.listarNoOperativos()],
+          vacio="(todos los recursos están operativos)")
+    print("\n  Los recursos no se borran. Para cambiar su condición use Inventario (M07), opción 5.")
 
 
 def listarPorTipo(sesion):
@@ -88,8 +104,16 @@ def listarPorCategoria(sesion):
 
 
 def listarPorEstado(sesion):
-    estado = leer(f"Estado ({', '.join(ESTADOS)}): ")
-    mostrarRecursos(sesion.sistema, sesion.sistema.recursos.listarPorEstado(estado))
+    sistema = sesion.sistema
+    estado = leer(f"Estado ({', '.join(ESTADOS_LISTADO)}): ")
+    try:
+        condicion = validarCondicion(estado)
+    except ValueError:
+        condicion = None
+    if condicion is None or condicion == OPERATIVO:
+        mostrarRecursos(sistema, sistema.recursos.listarPorEstado(estado))      # RQF-023 (M02)
+    else:
+        mostrarRecursos(sistema, sistema.condiciones.listarPorCondicion(condicion))
 
 
 def registrarSede(sesion):
@@ -107,7 +131,7 @@ def menu(sesion):
         ("Registrar recurso (libro, equipo o sala)", registrar),
         ("Consultar recurso (lista, código o tipo y nombre)", consultar),
         ("Actualizar datos de un recurso", actualizar),
-        ("Dar de baja recurso", darDeBaja),
+        ("Recursos fuera de servicio (solo consulta)", fueraDeServicio),
         ("Listar todos", lambda s: mostrarRecursos(s.sistema, s.sistema.recursos.listarTodos())),
         ("Listar por tipo", listarPorTipo),
         ("Listar por categoría", listarPorCategoria),
