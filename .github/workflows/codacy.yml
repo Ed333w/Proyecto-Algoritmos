@@ -1,0 +1,60 @@
+# Codacy - análisis estático y de seguridad del código Python
+#
+# Corre Codacy Analysis CLI (Pylint, Bandit, Prospector, ...) en cada push y
+# pull request a main, y una vez por semana. Los hallazgos se suben a GitHub en
+# la pestaña Security > Code scanning. No hace fallar el build por cantidad de
+# hallazgos: es un reporte, la calidad se revisa en Codacy y en GitHub.
+#
+# Qué archivos se analizan lo define .codacy.yml en la raíz del repositorio.
+# Opcional: si se crea el secreto CODACY_PROJECT_TOKEN (Settings > Secrets and
+# variables > Actions), usa la configuración de herramientas del proyecto en
+# app.codacy.com; sin el secreto usa la configuración por defecto.
+
+name: Codacy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"     # lunes 6:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  codacy:
+    name: Análisis de Codacy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write     # subir resultados a Code scanning
+      actions: read
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v7
+
+      - name: Analizar con Codacy
+        uses: codacy/codacy-analysis-cli-action@v4
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          verbose: true
+          output: results.sarif
+          format: sarif
+          gh-code-scanning-compat: true
+          max-allowed-issues: 2147483647
+
+      - name: Subir resultados a GitHub (Security > Code scanning)
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: results.sarif
+
+      - name: Guardar el reporte de Codacy como artefacto
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: codacy-sarif
+          path: results.sarif
+          if-no-files-found: warn

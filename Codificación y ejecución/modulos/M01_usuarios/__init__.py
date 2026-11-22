@@ -1,4 +1,4 @@
 from .usuario import Usuario
 from .gestor_usuarios import GestorUsuarios
 
-__all__ = ['Usuario', 'GestorUsuarios']
+__all__ = ['Usuario', 'GestorUsuarios', "ACTIVO", "INACTIVO", "TIPOS_DOCUMENTO"]
