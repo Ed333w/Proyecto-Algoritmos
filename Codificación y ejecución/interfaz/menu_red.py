@@ -1,6 +1,7 @@
 """Menú M09 · Red de sedes (grafo)."""
 
 from .consola import leer, tabla, ejecutarMenu
+from .menu_recursos import elegirRecurso
 
 
 def conectar(sesion):
@@ -20,7 +21,8 @@ def conexiones(sesion):
 
 
 def masCercana(sesion):
-    sede, recurso = leer("Sede actual: "), leer("Código del recurso: ")
+    recurso = elegirRecurso(sesion).codigo          # lista de códigos; Enter para buscar por tipo y nombre
+    sede = leer("Sede actual: ")
     resultado = sesion.sistema.red.sedeMasCercanaConRecurso(sede, recurso)
     if resultado is None:
         print("\n  Ninguna sede alcanzable tiene unidades de ese recurso")

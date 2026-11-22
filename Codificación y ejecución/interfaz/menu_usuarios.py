@@ -1,5 +1,8 @@
 """Menú M01 · Usuarios."""
 
+import unicodedata
+
+from estructuras.Algoritmos import mergeSort
 from modulos.M01_usuarios import TIPOS_DOCUMENTO
 from .consola import leer, tabla, ejecutarMenu
 
@@ -7,8 +10,23 @@ OPCIONES_DOCUMENTO = ", ".join(f"{sigla} = {nombre}" for sigla, nombre in TIPOS_
 
 
 def mostrarUsuarios(usuarios):
-    tabla(("Código", "Documento", "Nombre", "Correo", "Estado", "Préstamos activos"),
-          [(u.codigo, u.documento(), u.nombre, u.email, u.estado, u.prestamosActivos) for u in usuarios])
+    tabla(("Código", "Nombre", "Tipo doc.", "Número doc.", "Estado", "Correo", "Préstamos activos"),
+          [(u.codigo, u.nombre, u.tipoDocumento, u.numeroDocumento, u.estado, u.email, u.prestamosActivos)
+           for u in usuarios])
+
+
+def _sinTildes(texto):
+    return "".join(c for c in unicodedata.normalize("NFD", str(texto).lower())
+                   if unicodedata.category(c) != "Mn").strip()
+
+
+def buscarPorNombre(gestorUsuarios, nombre):
+    """Usuarios cuyo nombre contiene el texto (sin importar mayúsculas ni tildes), por nombre."""
+    texto = _sinTildes(nombre)
+    if not texto:
+        raise ValueError("Escriba el nombre o parte del nombre")
+    encontrados = [u for u in gestorUsuarios.listarTodos() if texto in _sinTildes(u.nombre)]
+    return mergeSort(encontrados, clave=lambda u: (_sinTildes(u.nombre), u.codigo))
 
 
 def _leerDocumento():
@@ -17,14 +35,30 @@ def _leerDocumento():
 
 
 def elegirUsuario(sesion):
-    """Muestra la lista actual de usuarios (con su estado) y deja elegir por código
-    o, si no se sabe, por tipo y número de documento."""
+    """Muestra la lista de usuarios (código, nombre, tipo y número de documento y estado)
+    y deja elegir por código o, si no se sabe, buscar por nombre o por tipo y número de
+    documento. La usan todos los menús que piden un usuario."""
     usuarios = sesion.sistema.usuarios
     mostrarUsuarios(usuarios.listarTodos())
-    codigo = leer("\nCódigo del usuario (Enter para buscar por documento): ")
+    codigo = leer("\nCódigo del usuario (Enter para buscar por nombre o documento): ")
     if codigo:
         return usuarios.obtener(codigo)
-    return usuarios.obtenerPorDocumento(*_leerDocumento())
+    forma = leer("Buscar por: 1 = nombre, 2 = tipo y número de documento: ")
+    if forma == "2":
+        usuario = usuarios.obtenerPorDocumento(*_leerDocumento())
+        print(f"  Usuario: {usuario.codigo} {usuario.nombre}")
+        return usuario
+    if forma != "1":
+        raise ValueError("Opción de búsqueda inválida (use 1 o 2)")
+    encontrados = buscarPorNombre(usuarios, leer("Nombre o parte del nombre: "))
+    if not encontrados:
+        raise ValueError("No hay usuarios con ese nombre")
+    if len(encontrados) == 1:
+        print(f"  Usuario: {encontrados[0].codigo} {encontrados[0].nombre}")
+        return encontrados[0]
+    print()
+    mostrarUsuarios(encontrados)
+    return usuarios.obtener(leer("\nHay varios: escriba el código del que busca: "))
 
 
 def registrar(sesion):
@@ -63,7 +97,7 @@ def reactivar(sesion):
 def menu(sesion):
     ejecutarMenu("M01 · USUARIOS", (
         ("Registrar usuario", registrar),
-        ("Consultar usuario (lista, código o documento)", consultar),
+        ("Consultar usuario (lista, código, nombre o documento)", consultar),
         ("Actualizar correo", actualizarCorreo),
         ("Dar de baja usuario", darDeBaja),
         ("Reactivar usuario", reactivar),

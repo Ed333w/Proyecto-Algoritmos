@@ -3,11 +3,15 @@
 from modulos.comun import fechaATexto
 from modulos.M07_Inventario import validarOperativo
 from .consola import leer, tabla, ejecutarMenu
+from .menu_recursos import elegirRecurso
+from .menu_usuarios import elegirUsuario
 
 
 def solicitar(sesion):
     turnos = sesion.sistema.turnos
-    usuario, recurso = leer("Código del usuario: "), leer("Código del recurso: ")
+    usuario = elegirUsuario(sesion).codigo            # lista de usuarios; búsqueda por nombre o documento
+    print()
+    recurso = elegirRecurso(sesion).codigo            # lista de recursos; búsqueda por tipo y nombre
     validarOperativo(sesion.sistema.recursos, recurso)   # un recurso dañado no recibe turnos nuevos
     codigo = turnos.solicitarTurno(usuario, recurso, leer("Sede: "))
     print(f"\n  Turno {codigo} asignado, posición {turnos.posicion(codigo)} en la fila")
@@ -15,7 +19,7 @@ def solicitar(sesion):
 
 def verSiguiente(sesion):
     sistema = sesion.sistema
-    recurso = sistema.recursos.obtener(leer("Código del recurso: ")).codigo
+    recurso = elegirRecurso(sesion).codigo
     sede = sistema.recursos.validarSede(leer("Sede: "))
     siguiente = sistema.turnos.verSiguiente(recurso, sede)
     print(f"\n  Sigue: {siguiente}" if siguiente else f"\n  Nadie espera {recurso} en {sede}")
@@ -23,7 +27,7 @@ def verSiguiente(sesion):
 
 def verFila(sesion):
     sistema = sesion.sistema
-    recurso = sistema.recursos.obtener(leer("Código del recurso: ")).codigo
+    recurso = elegirRecurso(sesion).codigo
     sede = leer("Sede (Enter para todas): ")
     sede = sistema.recursos.validarSede(sede) if sede else None
     fila = sistema.turnos.obtenerFila(recurso, sede)

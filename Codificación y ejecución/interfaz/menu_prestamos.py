@@ -4,6 +4,8 @@ from modulos.M03_Prestamos import SinUnidadesError
 from modulos.comun import fechaATexto
 from modulos.M07_Inventario import validarOperativo
 from .consola import leer, confirmar, tabla, ejecutarMenu
+from .menu_recursos import elegirRecurso
+from .menu_usuarios import elegirUsuario
 
 
 def mostrarPrestamos(prestamos, ahora=None):
@@ -22,8 +24,11 @@ def informarAsignados(sistema, asignados):
 
 def registrar(sesion):
     sistema = sesion.sistema
-    usuario, recurso, sede = leer("Código del usuario: "), leer("Código del recurso: "), leer("Sede: ")
+    usuario = elegirUsuario(sesion).codigo            # lista de usuarios; búsqueda por nombre o documento
+    print()
+    recurso = elegirRecurso(sesion).codigo            # lista de recursos; búsqueda por tipo y nombre
     validarOperativo(sistema.recursos, recurso)     # mensaje con la condición real (dañado, sin uso...)
+    sede = leer("Sede: ")
     try:
         codigo = sistema.prestamos.registrarPrestamo(usuario, recurso, sede)
     except SinUnidadesError as error:
@@ -64,7 +69,7 @@ def consultar(sesion):
 
 def deUsuario(sesion):
     prestamos = sesion.sistema.prestamos
-    codigo = leer("Código del usuario: ")
+    codigo = elegirUsuario(sesion).codigo
     print("\n  Préstamos activos:")
     mostrarPrestamos(prestamos.activosDeUsuario(codigo))
     atras = leer("\n  Historial: 1 = del más antiguo al más reciente, 2 = al revés: ") == "2"
@@ -72,7 +77,8 @@ def deUsuario(sesion):
 
 
 def deRecurso(sesion):
-    codigo = leer("Código del recurso: ")
+    codigo = elegirRecurso(sesion).codigo
+    print()
     mostrarPrestamos(sesion.sistema.prestamos.historialRecurso(codigo))
 
 

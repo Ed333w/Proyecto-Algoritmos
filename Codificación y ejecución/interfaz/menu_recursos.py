@@ -39,6 +39,7 @@ def elegirRecurso(sesion):
     if not encontrados:
         raise ValueError("No hay recursos con ese tipo y nombre")
     if len(encontrados) == 1:
+        print(f"  Recurso: {encontrados[0].codigo} {encontrados[0].nombre}")
         return encontrados[0]
     print()
     mostrarRecursos(sistema, encontrados)

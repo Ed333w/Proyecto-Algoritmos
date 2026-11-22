@@ -1,8 +1,9 @@
 """Menú M08 · Asistente de decisiones del administrador."""
 
 from modulos.comun import fechaATexto
-from .consola import leer, leerEntero, confirmar, tabla, ejecutarMenu
+from .consola import leerEntero, confirmar, tabla, ejecutarMenu
 from .menu_prestamos import informarAsignados
+from .menu_recursos import elegirRecurso
 
 
 def mostrarVencimientos(sistema, dias=2):
@@ -31,7 +32,9 @@ def mostrarNoOperativos(sistema):
 
 def redistribucion(sesion):
     asistente = sesion.sistema.asistente
-    codigo = leer("Código del recurso (Enter para todos): ") or None
+    codigo = None
+    if confirmar("  ¿Analizar un solo recurso? (n = todos)"):
+        codigo = elegirRecurso(sesion).codigo      # lista de códigos; Enter para buscar por tipo y nombre
     traslados = asistente.recomendarRedistribucion(codigo)
     tabla(("N°", "Recurso", "Desde", "Hacia", "Unidades"),
           [(i, t.codigoRecurso, t.origen, t.destino, t.unidades) for i, t in enumerate(traslados, 1)],
@@ -56,7 +59,7 @@ def compras(sesion):
 
 
 def prediccion(sesion):
-    p = sesion.sistema.asistente.predecirDisponibilidad(leer("Código del recurso: "))
+    p = sesion.sistema.asistente.predecirDisponibilidad(elegirRecurso(sesion).codigo)
     r = p["recurso"]
     print(f"\n  {r.codigo} {r.nombre}")
     if not p["operativo"]:
