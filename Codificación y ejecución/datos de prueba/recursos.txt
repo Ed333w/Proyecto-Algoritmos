@@ -1,201 +1,201 @@
 codigo;tipo;nombre;categoria;fechaRegistro;estado;dato1;dato2;dato3
-R0001;Libro;Historia 1;C018;2026-11-21 13:41;Vigente;Autor 0;978-00000;1983
-R0002;Equipo;Equipo Historia 2;C026;2026-11-21 13:41;Vigente;Portatil;M1;Bodega
-R0003;Sala;Sala Bases de Datos 3;C026;2026-11-21 13:41;Vigente;8;Tablero
-R0004;Libro;Robotica 4;C013;2026-11-21 13:41;Vigente;Autor 3;978-00003;1984
-R0005;Equipo;Equipo Estadistica 5;C005;2026-11-21 13:41;Vigente;Portatil;M4;Bodega
-R0006;Sala;Sala Algebra 6;C016;2026-11-21 13:41;Vigente;7;Tablero
-R0007;Libro;Literatura 7;C017;2026-11-21 13:41;Vigente;Autor 6;978-00006;1998
-R0008;Equipo;Equipo Bases de Datos 8;C003;2026-11-21 13:41;Vigente;Portatil;M7;Bodega
-R0009;Sala;Sala Historia 9;C009;2026-11-21 13:41;Vigente;28;Tablero
-R0010;Libro;Literatura 10;C017;2026-11-21 13:41;Vigente;Autor 9;978-00009;1996
-R0011;Equipo;Equipo Historia 11;C029;2026-11-21 13:41;Vigente;Portatil;M10;Bodega
-R0012;Sala;Sala Biologia 12;C015;2026-11-21 13:41;Vigente;29;Tablero
-R0013;Libro;Calculo 13;C027;2026-11-21 13:41;Vigente;Autor 12;978-00012;2001
-R0014;Equipo;Equipo Literatura 14;C001;2026-11-21 13:41;Vigente;Portatil;M13;Bodega
-R0015;Sala;Sala Quimica 15;C028;2026-11-21 13:41;Vigente;8;Tablero
-R0016;Libro;Algebra 16;C027;2026-11-21 13:41;Vigente;Autor 15;978-00015;2022
-R0017;Equipo;Equipo Fisica 17;C007;2026-11-21 13:41;Vigente;Portatil;M16;Bodega
-R0018;Sala;Sala Redes 18;C024;2026-11-21 13:41;Vigente;9;Tablero
-R0019;Libro;Historia 19;C002;2026-11-21 13:41;Vigente;Autor 18;978-00018;2015
-R0020;Equipo;Equipo Bases de Datos 20;C009;2026-11-21 13:41;Vigente;Portatil;M19;Bodega
-R0021;Sala;Sala Economia 21;C022;2026-11-21 13:41;Vigente;29;Tablero
-R0022;Libro;Arte 22;C016;2026-11-21 13:41;Vigente;Autor 21;978-00021;2015
-R0023;Equipo;Equipo Economia 23;C007;2026-11-21 13:41;Vigente;Portatil;M22;Bodega
-R0024;Sala;Sala Fisica 24;C008;2026-11-21 13:41;Vigente;27;Tablero
-R0025;Libro;Quimica 25;C024;2026-11-21 13:41;Vigente;Autor 24;978-00024;2013
-R0026;Equipo;Equipo Bases de Datos 26;C019;2026-11-21 13:41;Vigente;Portatil;M25;Bodega
-R0027;Sala;Sala Quimica 27;C013;2026-11-21 13:41;Vigente;32;Tablero
-R0028;Libro;Literatura 28;C025;2026-11-21 13:41;Vigente;Autor 27;978-00027;2010
-R0029;Equipo;Equipo Robotica 29;C015;2026-11-21 13:41;Vigente;Portatil;M28;Bodega
-R0030;Sala;Sala Economia 30;C022;2026-11-21 13:41;Vigente;10;Tablero
-R0031;Libro;Arte 31;C005;2026-11-21 13:41;Vigente;Autor 30;978-00030;1994
-R0032;Equipo;Equipo Biologia 32;C014;2026-11-21 13:41;Vigente;Portatil;M31;Bodega
-R0033;Sala;Sala Estadistica 33;C007;2026-11-21 13:41;Vigente;28;Tablero
-R0034;Libro;Historia 34;C009;2026-11-21 13:41;Vigente;Autor 33;978-00033;2000
-R0035;Equipo;Equipo Redes 35;C001;2026-11-21 13:41;Vigente;Portatil;M34;Bodega
-R0036;Sala;Sala Biologia 36;C021;2026-11-21 13:41;Vigente;30;Tablero
-R0037;Libro;Historia 37;C002;2026-11-21 13:41;Vigente;Autor 36;978-00036;2024
-R0038;Equipo;Equipo Arte 38;C010;2026-11-21 13:41;Vigente;Portatil;M37;Bodega
-R0039;Sala;Sala Bases de Datos 39;C025;2026-11-21 13:41;Vigente;16;Tablero
-R0040;Libro;Estadistica 40;C016;2026-11-21 13:41;Vigente;Autor 39;978-00039;2019
-R0041;Equipo;Equipo Python 41;C030;2026-11-21 13:41;Vigente;Portatil;M40;Bodega
-R0042;Sala;Sala Quimica 42;C002;2026-11-21 13:41;Vigente;7;Tablero
-R0043;Libro;Python 43;C011;2026-11-21 13:41;Vigente;Autor 2;978-00042;1992
-R0044;Equipo;Equipo Robotica 44;C012;2026-11-21 13:41;Vigente;Portatil;M43;Bodega
-R0045;Sala;Sala Bases de Datos 45;C003;2026-11-21 13:41;Vigente;26;Tablero
-R0046;Libro;Robotica 46;C026;2026-11-21 13:41;Vigente;Autor 5;978-00045;2007
-R0047;Equipo;Equipo Historia 47;C007;2026-11-21 13:41;Vigente;Portatil;M46;Bodega
-R0048;Sala;Sala Arte 48;C021;2026-11-21 13:41;Vigente;29;Tablero
-R0049;Libro;Bases de Datos 49;C007;2026-11-21 13:41;Vigente;Autor 8;978-00048;1984
-R0050;Equipo;Equipo Algebra 50;C009;2026-11-21 13:41;Vigente;Portatil;M49;Bodega
-R0051;Sala;Sala Arte 51;C021;2026-11-21 13:41;Vigente;8;Tablero
-R0052;Libro;Arte 52;C009;2026-11-21 13:41;Vigente;Autor 11;978-00051;2007
-R0053;Equipo;Equipo Robotica 53;C023;2026-11-21 13:41;Vigente;Portatil;M52;Bodega
-R0054;Sala;Sala Fisica 54;C026;2026-11-21 13:41;Vigente;9;Tablero
-R0055;Libro;Calculo 55;C021;2026-11-21 13:41;Vigente;Autor 14;978-00054;1982
-R0056;Equipo;Equipo Calculo 56;C009;2026-11-21 13:41;Vigente;Portatil;M55;Bodega
-R0057;Sala;Sala Literatura 57;C015;2026-11-21 13:41;Vigente;15;Tablero
-R0058;Libro;Literatura 58;C018;2026-11-21 13:41;Vigente;Autor 17;978-00057;2022
-R0059;Equipo;Equipo Fisica 59;C009;2026-11-21 13:41;Vigente;Portatil;M58;Bodega
-R0060;Sala;Sala Redes 60;C008;2026-11-21 13:41;Vigente;13;Tablero
-R0061;Libro;Bases de Datos 61;C008;2026-11-21 13:41;Vigente;Autor 20;978-00060;2012
-R0062;Equipo;Equipo Algebra 62;C016;2026-11-21 13:41;Vigente;Portatil;M61;Bodega
-R0063;Sala;Sala Calculo 63;C002;2026-11-21 13:41;Vigente;16;Tablero
-R0064;Libro;Robotica 64;C006;2026-11-21 13:41;Vigente;Autor 23;978-00063;2008
-R0065;Equipo;Equipo Fisica 65;C007;2026-11-21 13:41;Vigente;Portatil;M64;Bodega
-R0066;Sala;Sala Bases de Datos 66;C002;2026-11-21 13:41;Vigente;17;Tablero
-R0067;Libro;Bases de Datos 67;C003;2026-11-21 13:41;Vigente;Autor 26;978-00066;1993
-R0068;Equipo;Equipo Arte 68;C013;2026-11-21 13:41;Vigente;Portatil;M67;Bodega
-R0069;Sala;Sala Quimica 69;C023;2026-11-21 13:41;Vigente;21;Tablero
-R0070;Libro;Literatura 70;C019;2026-11-21 13:41;Vigente;Autor 29;978-00069;2002
-R0071;Equipo;Equipo Literatura 71;C013;2026-11-21 13:41;Vigente;Portatil;M70;Bodega
-R0072;Sala;Sala Robotica 72;C003;2026-11-21 13:41;Vigente;29;Tablero
-R0073;Libro;Algebra 73;C018;2026-11-21 13:41;Vigente;Autor 32;978-00072;1989
-R0074;Equipo;Equipo Literatura 74;C017;2026-11-21 13:41;Vigente;Portatil;M73;Bodega
-R0075;Sala;Sala Python 75;C030;2026-11-21 13:41;Vigente;8;Tablero
-R0076;Libro;Robotica 76;C002;2026-11-21 13:41;Vigente;Autor 35;978-00075;2010
-R0077;Equipo;Equipo Biologia 77;C026;2026-11-21 13:41;Vigente;Portatil;M76;Bodega
-R0078;Sala;Sala Python 78;C019;2026-11-21 13:41;Vigente;17;Tablero
-R0079;Libro;Python 79;C008;2026-11-21 13:41;Vigente;Autor 38;978-00078;1992
-R0080;Equipo;Equipo Estadistica 80;C015;2026-11-21 13:41;Vigente;Portatil;M79;Bodega
-R0081;Sala;Sala Quimica 81;C013;2026-11-21 13:41;Vigente;27;Tablero
-R0082;Libro;Estadistica 82;C016;2026-11-21 13:41;Vigente;Autor 1;978-00081;2009
-R0083;Equipo;Equipo Calculo 83;C003;2026-11-21 13:41;Vigente;Portatil;M82;Bodega
-R0084;Sala;Sala Economia 84;C017;2026-11-21 13:41;Vigente;6;Tablero
-R0085;Libro;Algebra 85;C025;2026-11-21 13:41;Vigente;Autor 4;978-00084;2012
-R0086;Equipo;Equipo Redes 86;C005;2026-11-21 13:41;Vigente;Portatil;M85;Bodega
-R0087;Sala;Sala Estadistica 87;C025;2026-11-21 13:41;Vigente;20;Tablero
-R0088;Libro;Economia 88;C030;2026-11-21 13:41;Vigente;Autor 7;978-00087;2010
-R0089;Equipo;Equipo Fisica 89;C012;2026-11-21 13:41;Vigente;Portatil;M88;Bodega
-R0090;Sala;Sala Biologia 90;C011;2026-11-21 13:41;Vigente;28;Tablero
-R0091;Libro;Robotica 91;C015;2026-11-21 13:41;Vigente;Autor 10;978-00090;2015
-R0092;Equipo;Equipo Literatura 92;C026;2026-11-21 13:41;Vigente;Portatil;M91;Bodega
-R0093;Sala;Sala Fisica 93;C011;2026-11-21 13:41;Vigente;9;Tablero
-R0094;Libro;Robotica 94;C017;2026-11-21 13:41;Vigente;Autor 13;978-00093;1996
-R0095;Equipo;Equipo Python 95;C010;2026-11-21 13:41;Vigente;Portatil;M94;Bodega
-R0096;Sala;Sala Python 96;C016;2026-11-21 13:41;Vigente;18;Tablero
-R0097;Libro;Fisica 97;C010;2026-11-21 13:41;Vigente;Autor 16;978-00096;1986
-R0098;Equipo;Equipo Estadistica 98;C005;2026-11-21 13:41;Vigente;Portatil;M97;Bodega
-R0099;Sala;Sala Arte 99;C008;2026-11-21 13:41;Vigente;13;Tablero
-R0100;Libro;Arte 100;C009;2026-11-21 13:41;Vigente;Autor 19;978-00099;1980
-R0101;Equipo;Equipo Estadistica 101;C030;2026-11-21 13:41;Vigente;Portatil;M100;Bodega
-R0102;Sala;Sala Algebra 102;C018;2026-11-21 13:41;Vigente;5;Tablero
-R0103;Libro;Algebra 103;C020;2026-11-21 13:41;Vigente;Autor 22;978-00102;2015
-R0104;Equipo;Equipo Estadistica 104;C021;2026-11-21 13:41;Vigente;Portatil;M103;Bodega
-R0105;Sala;Sala Bases de Datos 105;C021;2026-11-21 13:41;Vigente;7;Tablero
-R0106;Libro;Calculo 106;C024;2026-11-21 13:41;Vigente;Autor 25;978-00105;2021
-R0107;Equipo;Equipo Biologia 107;C002;2026-11-21 13:41;Vigente;Portatil;M106;Bodega
-R0108;Sala;Sala Biologia 108;C014;2026-11-21 13:41;Vigente;37;Tablero
-R0109;Libro;Python 109;C009;2026-11-21 13:41;Vigente;Autor 28;978-00108;1995
-R0110;Equipo;Equipo Fisica 110;C020;2026-11-21 13:41;Vigente;Portatil;M109;Bodega
-R0111;Sala;Sala Robotica 111;C001;2026-11-21 13:41;Vigente;31;Tablero
-R0112;Libro;Estadistica 112;C003;2026-11-21 13:41;Vigente;Autor 31;978-00111;2016
-R0113;Equipo;Equipo Estadistica 113;C030;2026-11-21 13:41;Vigente;Portatil;M112;Bodega
-R0114;Sala;Sala Python 114;C023;2026-11-21 13:41;Vigente;6;Tablero
-R0115;Libro;Redes 115;C027;2026-11-21 13:41;Vigente;Autor 34;978-00114;2014
-R0116;Equipo;Equipo Redes 116;C004;2026-11-21 13:41;Vigente;Portatil;M115;Bodega
-R0117;Sala;Sala Python 117;C004;2026-11-21 13:41;Vigente;17;Tablero
-R0118;Libro;Fisica 118;C009;2026-11-21 13:41;Vigente;Autor 37;978-00117;1998
-R0119;Equipo;Equipo Robotica 119;C010;2026-11-21 13:41;Vigente;Portatil;M118;Bodega
-R0120;Sala;Sala Arte 120;C004;2026-11-21 13:41;Vigente;26;Tablero
-R0121;Libro;Python 121;C014;2026-11-21 13:41;Vigente;Autor 0;978-00120;1980
-R0122;Equipo;Equipo Historia 122;C004;2026-11-21 13:41;Vigente;Portatil;M121;Bodega
-R0123;Sala;Sala Bases de Datos 123;C019;2026-11-21 13:41;Vigente;14;Tablero
-R0124;Libro;Biologia 124;C025;2026-11-21 13:41;Vigente;Autor 3;978-00123;1985
-R0125;Equipo;Equipo Quimica 125;C030;2026-11-21 13:41;Vigente;Portatil;M124;Bodega
-R0126;Sala;Sala Bases de Datos 126;C009;2026-11-21 13:41;Vigente;31;Tablero
-R0127;Libro;Python 127;C018;2026-11-21 13:41;Vigente;Autor 6;978-00126;2018
-R0128;Equipo;Equipo Economia 128;C005;2026-11-21 13:41;Vigente;Portatil;M127;Bodega
-R0129;Sala;Sala Literatura 129;C025;2026-11-21 13:41;Vigente;20;Tablero
-R0130;Libro;Economia 130;C007;2026-11-21 13:41;Vigente;Autor 9;978-00129;1997
-R0131;Equipo;Equipo Estadistica 131;C017;2026-11-21 13:41;Vigente;Portatil;M130;Bodega
-R0132;Sala;Sala Literatura 132;C004;2026-11-21 13:41;Vigente;14;Tablero
-R0133;Libro;Arte 133;C010;2026-11-21 13:41;Vigente;Autor 12;978-00132;1999
-R0134;Equipo;Equipo Redes 134;C029;2026-11-21 13:41;Vigente;Portatil;M133;Bodega
-R0135;Sala;Sala Literatura 135;C008;2026-11-21 13:41;Vigente;36;Tablero
-R0136;Libro;Estadistica 136;C024;2026-11-21 13:41;Vigente;Autor 15;978-00135;2005
-R0137;Equipo;Equipo Robotica 137;C008;2026-11-21 13:41;Vigente;Portatil;M136;Bodega
-R0138;Sala;Sala Quimica 138;C011;2026-11-21 13:41;Vigente;20;Tablero
-R0139;Libro;Bases de Datos 139;C028;2026-11-21 13:41;Vigente;Autor 18;978-00138;2007
-R0140;Equipo;Equipo Biologia 140;C022;2026-11-21 13:41;Vigente;Portatil;M139;Bodega
-R0141;Sala;Sala Algebra 141;C009;2026-11-21 13:41;Vigente;38;Tablero
-R0142;Libro;Robotica 142;C019;2026-11-21 13:41;Vigente;Autor 21;978-00141;2009
-R0143;Equipo;Equipo Economia 143;C011;2026-11-21 13:41;Vigente;Portatil;M142;Bodega
-R0144;Sala;Sala Arte 144;C030;2026-11-21 13:41;Vigente;11;Tablero
-R0145;Libro;Quimica 145;C013;2026-11-21 13:41;Vigente;Autor 24;978-00144;1983
-R0146;Equipo;Equipo Bases de Datos 146;C004;2026-11-21 13:41;Vigente;Portatil;M145;Bodega
-R0147;Sala;Sala Historia 147;C007;2026-11-21 13:41;Vigente;14;Tablero
-R0148;Libro;Robotica 148;C005;2026-11-21 13:41;Vigente;Autor 27;978-00147;2002
-R0149;Equipo;Equipo Arte 149;C027;2026-11-21 13:41;Vigente;Portatil;M148;Bodega
-R0150;Sala;Sala Quimica 150;C022;2026-11-21 13:41;Vigente;15;Tablero
-R0151;Libro;Fisica 151;C016;2026-11-21 13:41;Vigente;Autor 30;978-00150;2011
-R0152;Equipo;Equipo Robotica 152;C013;2026-11-21 13:41;Vigente;Portatil;M151;Bodega
-R0153;Sala;Sala Biologia 153;C019;2026-11-21 13:41;Vigente;4;Tablero
-R0154;Libro;Estadistica 154;C004;2026-11-21 13:41;Vigente;Autor 33;978-00153;2017
-R0155;Equipo;Equipo Redes 155;C029;2026-11-21 13:41;Vigente;Portatil;M154;Bodega
-R0156;Sala;Sala Biologia 156;C029;2026-11-21 13:41;Vigente;39;Tablero
-R0157;Libro;Calculo 157;C024;2026-11-21 13:41;Vigente;Autor 36;978-00156;2008
-R0158;Equipo;Equipo Robotica 158;C005;2026-11-21 13:41;Vigente;Portatil;M157;Bodega
-R0159;Sala;Sala Literatura 159;C016;2026-11-21 13:41;Vigente;19;Tablero
-R0160;Libro;Literatura 160;C019;2026-11-21 13:41;Vigente;Autor 39;978-00159;2011
-R0161;Equipo;Equipo Biologia 161;C003;2026-11-21 13:41;Vigente;Portatil;M160;Bodega
-R0162;Sala;Sala Biologia 162;C024;2026-11-21 13:41;Vigente;25;Tablero
-R0163;Libro;Redes 163;C023;2026-11-21 13:41;Vigente;Autor 2;978-00162;2006
-R0164;Equipo;Equipo Historia 164;C025;2026-11-21 13:41;Vigente;Portatil;M163;Bodega
-R0165;Sala;Sala Quimica 165;C009;2026-11-21 13:41;Vigente;39;Tablero
-R0166;Libro;Fisica 166;C017;2026-11-21 13:41;Vigente;Autor 5;978-00165;1997
-R0167;Equipo;Equipo Redes 167;C011;2026-11-21 13:41;Vigente;Portatil;M166;Bodega
-R0168;Sala;Sala Quimica 168;C024;2026-11-21 13:41;Vigente;39;Tablero
-R0169;Libro;Algebra 169;C002;2026-11-21 13:41;Vigente;Autor 8;978-00168;1992
-R0170;Equipo;Equipo Quimica 170;C020;2026-11-21 13:41;Vigente;Portatil;M169;Bodega
-R0171;Sala;Sala Biologia 171;C025;2026-11-21 13:41;Vigente;15;Tablero
-R0172;Libro;Fisica 172;C028;2026-11-21 13:41;Vigente;Autor 11;978-00171;1988
-R0173;Equipo;Equipo Algebra 173;C011;2026-11-21 13:41;Vigente;Portatil;M172;Bodega
-R0174;Sala;Sala Algebra 174;C027;2026-11-21 13:41;Vigente;11;Tablero
-R0175;Libro;Biologia 175;C013;2026-11-21 13:41;Vigente;Autor 14;978-00174;2018
-R0176;Equipo;Equipo Calculo 176;C021;2026-11-21 13:41;Vigente;Portatil;M175;Bodega
-R0177;Sala;Sala Algebra 177;C022;2026-11-21 13:41;Vigente;11;Tablero
-R0178;Libro;Bases de Datos 178;C024;2026-11-21 13:41;Vigente;Autor 17;978-00177;2016
-R0179;Equipo;Equipo Literatura 179;C025;2026-11-21 13:41;Vigente;Portatil;M178;Bodega
-R0180;Sala;Sala Literatura 180;C002;2026-11-21 13:41;Vigente;4;Tablero
-R0181;Libro;Literatura 181;C020;2026-11-21 13:41;Vigente;Autor 20;978-00180;1990
-R0182;Equipo;Equipo Literatura 182;C015;2026-11-21 13:41;Vigente;Portatil;M181;Bodega
-R0183;Sala;Sala Biologia 183;C026;2026-11-21 13:41;Vigente;30;Tablero
-R0184;Libro;Bases de Datos 184;C009;2026-11-21 13:41;Vigente;Autor 23;978-00183;1983
-R0185;Equipo;Equipo Estadistica 185;C027;2026-11-21 13:41;Vigente;Portatil;M184;Bodega
-R0186;Sala;Sala Biologia 186;C013;2026-11-21 13:41;Vigente;18;Tablero
-R0187;Libro;Quimica 187;C006;2026-11-21 13:41;Vigente;Autor 26;978-00186;2017
-R0188;Equipo;Equipo Robotica 188;C026;2026-11-21 13:41;Vigente;Portatil;M187;Bodega
-R0189;Sala;Sala Economia 189;C016;2026-11-21 13:41;Vigente;28;Tablero
-R0190;Libro;Historia 190;C023;2026-11-21 13:41;Vigente;Autor 29;978-00189;1993
-R0191;Equipo;Equipo Calculo 191;C018;2026-11-21 13:41;Vigente;Portatil;M190;Bodega
-R0192;Sala;Sala Bases de Datos 192;C029;2026-11-21 13:41;Vigente;37;Tablero
-R0193;Libro;Calculo 193;C006;2026-11-21 13:41;Vigente;Autor 32;978-00192;2024
-R0194;Equipo;Equipo Redes 194;C002;2026-11-21 13:41;Vigente;Portatil;M193;Bodega
-R0195;Sala;Sala Python 195;C011;2026-11-21 13:41;Vigente;5;Tablero
-R0196;Libro;Robotica 196;C028;2026-11-21 13:41;Vigente;Autor 35;978-00195;2016
-R0197;Equipo;Equipo Calculo 197;C015;2026-11-21 13:41;Vigente;Portatil;M196;Bodega
-R0198;Sala;Sala Redes 198;C006;2026-11-21 13:41;Vigente;28;Tablero
-R0199;Libro;Robotica 199;C023;2026-11-21 13:41;Vigente;Autor 38;978-00198;2009
-R0200;Equipo;Equipo Fisica 200;C019;2026-11-21 13:41;Vigente;Portatil;M199;Bodega
+R0001;Libro;Historia 1;C020;2026-11-22 18:08;Vigente;Autor 0;978-00000;2015
+R0002;Equipo;Computador 2;C010;2026-11-22 18:08;Vigente;Computador;M1;Sala de computo
+R0003;Sala;Sala 3;C004;2026-11-22 18:08;Vigente;8;Tablero
+R0004;Libro;Calculo 4;C014;2026-11-22 18:08;Vigente;Autor 3;978-00003;2010
+R0005;Equipo;Laptop 5;C011;2026-11-22 18:08;Sin uso;Portatil;M4;Bodega
+R0006;Sala;Sala 6;C007;2026-11-22 18:08;Vigente;21;Tablero
+R0007;Libro;Historia 7;C020;2026-11-22 18:08;Vigente;Autor 6;978-00006;2009
+R0008;Equipo;Laptop 8;C011;2026-11-22 18:08;Dañado;Portatil;M7;Bodega
+R0009;Sala;Sala 9;C006;2026-11-22 18:08;Vigente;8;Tablero
+R0010;Libro;Robotica 10;C026;2026-11-22 18:08;Vigente;Autor 9;978-00009;2020
+R0011;Equipo;Laptop 11;C011;2026-11-22 18:08;Vigente;Portatil;M10;Bodega
+R0012;Sala;Sala 12;C005;2026-11-22 18:08;Vigente;13;Tablero
+R0013;Libro;Fisica 13;C018;2026-11-22 18:08;Vigente;Autor 12;978-00012;2001
+R0014;Equipo;Laptop 14;C011;2026-11-22 18:08;Vigente;Portatil;M13;Bodega
+R0015;Sala;Sala 15;C004;2026-11-22 18:08;En reparación;7;Tablero
+R0016;Libro;Quimica 16;C019;2026-11-22 18:08;Vigente;Autor 15;978-00015;2012
+R0017;Equipo;Computador 17;C010;2026-11-22 18:08;Vigente;Computador;M16;Sala de computo
+R0018;Sala;Sala 18;C007;2026-11-22 18:08;Vigente;12;Tablero
+R0019;Libro;Historia 19;C020;2026-11-22 18:08;Vigente;Autor 18;978-00018;2006
+R0020;Equipo;Laptop 20;C011;2026-11-22 18:08;Vigente;Portatil;M19;Bodega
+R0021;Sala;Sala 21;C006;2026-11-22 18:08;Vigente;17;Tablero
+R0022;Libro;Quimica 22;C019;2026-11-22 18:08;Vigente;Autor 21;978-00021;1988
+R0023;Equipo;Laptop 23;C011;2026-11-22 18:08;Vigente;Portatil;M22;Bodega
+R0024;Sala;Sala 24;C005;2026-11-22 18:08;Vigente;30;Tablero
+R0025;Libro;Arte 25;C025;2026-11-22 18:08;Vigente;Autor 24;978-00024;1983
+R0026;Equipo;Computador 26;C010;2026-11-22 18:08;Vigente;Computador;M25;Sala de computo
+R0027;Sala;Sala 27;C005;2026-11-22 18:08;Vigente;32;Tablero
+R0028;Libro;Estadistica 28;C022;2026-11-22 18:08;Vigente;Autor 27;978-00027;2011
+R0029;Equipo;Computador 29;C010;2026-11-22 18:08;Vigente;Computador;M28;Sala de computo
+R0030;Sala;Sala 30;C002;2026-11-22 18:08;Vigente;39;Tablero
+R0031;Libro;Python 31;C015;2026-11-22 18:08;Vigente;Autor 30;978-00030;2020
+R0032;Equipo;Computador 32;C010;2026-11-22 18:08;Vigente;Computador;M31;Sala de computo
+R0033;Sala;Sala 33;C006;2026-11-22 18:08;Vigente;4;Tablero
+R0034;Libro;Economia 34;C021;2026-11-22 18:08;Vigente;Autor 33;978-00033;1995
+R0035;Equipo;Laptop 35;C011;2026-11-22 18:08;Vigente;Portatil;M34;Bodega
+R0036;Sala;Sala 36;C005;2026-11-22 18:08;Vigente;18;Tablero
+R0037;Libro;Algebra 37;C013;2026-11-22 18:08;Vigente;Autor 36;978-00036;1998
+R0038;Equipo;Computador 38;C010;2026-11-22 18:08;Vigente;Computador;M37;Sala de computo
+R0039;Sala;Sala 39;C006;2026-11-22 18:08;Vigente;35;Tablero
+R0040;Libro;Python 40;C015;2026-11-22 18:08;Vigente;Autor 39;978-00039;2005
+R0041;Equipo;Computador 41;C010;2026-11-22 18:08;Vigente;Computador;M40;Sala de computo
+R0042;Sala;Sala 42;C003;2026-11-22 18:08;Vigente;25;Tablero
+R0043;Libro;Robotica 43;C026;2026-11-22 18:08;Vigente;Autor 2;978-00042;2003
+R0044;Equipo;Laptop 44;C011;2026-11-22 18:08;Vigente;Portatil;M43;Bodega
+R0045;Sala;Sala 45;C002;2026-11-22 18:08;Vigente;31;Tablero
+R0046;Libro;Redes 46;C016;2026-11-22 18:08;Vigente;Autor 5;978-00045;2000
+R0047;Equipo;Laptop 47;C011;2026-11-22 18:08;Vigente;Portatil;M46;Bodega
+R0048;Sala;Sala 48;C004;2026-11-22 18:08;Vigente;25;Tablero
+R0049;Libro;Bases de Datos 49;C017;2026-11-22 18:08;Vigente;Autor 8;978-00048;1980
+R0050;Equipo;Computador 50;C010;2026-11-22 18:08;Vigente;Computador;M49;Sala de computo
+R0051;Sala;Sala 51;C002;2026-11-22 18:08;Vigente;15;Tablero
+R0052;Libro;Robotica 52;C026;2026-11-22 18:08;Vigente;Autor 11;978-00051;2000
+R0053;Equipo;Laptop 53;C011;2026-11-22 18:08;Dañado;Portatil;M52;Bodega
+R0054;Sala;Sala 54;C005;2026-11-22 18:08;Vigente;14;Tablero
+R0055;Libro;Calculo 55;C014;2026-11-22 18:08;Vigente;Autor 14;978-00054;2006
+R0056;Equipo;Computador 56;C010;2026-11-22 18:08;Vigente;Computador;M55;Sala de computo
+R0057;Sala;Sala 57;C004;2026-11-22 18:08;Vigente;21;Tablero
+R0058;Libro;Redes 58;C016;2026-11-22 18:08;Vigente;Autor 17;978-00057;1995
+R0059;Equipo;Computador 59;C010;2026-11-22 18:08;Vigente;Computador;M58;Sala de computo
+R0060;Sala;Sala 60;C005;2026-11-22 18:08;Vigente;4;Tablero
+R0061;Libro;Calculo 61;C014;2026-11-22 18:08;Vigente;Autor 20;978-00060;1983
+R0062;Equipo;Laptop 62;C011;2026-11-22 18:08;Vigente;Portatil;M61;Bodega
+R0063;Sala;Sala 63;C002;2026-11-22 18:08;Vigente;17;Tablero
+R0064;Libro;Algebra 64;C013;2026-11-22 18:08;Vigente;Autor 23;978-00063;2018
+R0065;Equipo;Computador 65;C010;2026-11-22 18:08;Vigente;Computador;M64;Sala de computo
+R0066;Sala;Sala 66;C002;2026-11-22 18:08;Vigente;30;Tablero
+R0067;Libro;Quimica 67;C019;2026-11-22 18:08;Vigente;Autor 26;978-00066;2024
+R0068;Equipo;Computador 68;C010;2026-11-22 18:08;Vigente;Computador;M67;Sala de computo
+R0069;Sala;Sala 69;C003;2026-11-22 18:08;Vigente;29;Tablero
+R0070;Libro;Quimica 70;C019;2026-11-22 18:08;Vigente;Autor 29;978-00069;2016
+R0071;Equipo;Laptop 71;C011;2026-11-22 18:08;Vigente;Portatil;M70;Bodega
+R0072;Sala;Sala 72;C003;2026-11-22 18:08;Vigente;22;Tablero
+R0073;Libro;Arte 73;C025;2026-11-22 18:08;Vigente;Autor 32;978-00072;1992
+R0074;Equipo;Computador 74;C010;2026-11-22 18:08;Vigente;Computador;M73;Sala de computo
+R0075;Sala;Sala 75;C005;2026-11-22 18:08;Vigente;16;Tablero
+R0076;Libro;Python 76;C015;2026-11-22 18:08;Vigente;Autor 35;978-00075;2004
+R0077;Equipo;Computador 77;C010;2026-11-22 18:08;Vigente;Computador;M76;Sala de computo
+R0078;Sala;Sala 78;C007;2026-11-22 18:08;Vigente;39;Tablero
+R0079;Libro;Quimica 79;C019;2026-11-22 18:08;Vigente;Autor 38;978-00078;2022
+R0080;Equipo;Computador 80;C010;2026-11-22 18:08;Vigente;Computador;M79;Sala de computo
+R0081;Sala;Sala 81;C005;2026-11-22 18:08;Vigente;34;Tablero
+R0082;Libro;Calculo 82;C014;2026-11-22 18:08;Vigente;Autor 1;978-00081;2008
+R0083;Equipo;Laptop 83;C011;2026-11-22 18:08;Vigente;Portatil;M82;Bodega
+R0084;Sala;Sala 84;C002;2026-11-22 18:08;Vigente;12;Tablero
+R0085;Libro;Bases de Datos 85;C017;2026-11-22 18:08;Vigente;Autor 4;978-00084;1990
+R0086;Equipo;Laptop 86;C011;2026-11-22 18:08;Vigente;Portatil;M85;Bodega
+R0087;Sala;Sala 87;C006;2026-11-22 18:08;Vigente;17;Tablero
+R0088;Libro;Redes 88;C016;2026-11-22 18:08;Vigente;Autor 7;978-00087;1991
+R0089;Equipo;Computador 89;C010;2026-11-22 18:08;Vigente;Computador;M88;Sala de computo
+R0090;Sala;Sala 90;C004;2026-11-22 18:08;Vigente;10;Tablero
+R0091;Libro;Estadistica 91;C022;2026-11-22 18:08;Vigente;Autor 10;978-00090;1989
+R0092;Equipo;Computador 92;C010;2026-11-22 18:08;Vigente;Computador;M91;Sala de computo
+R0093;Sala;Sala 93;C007;2026-11-22 18:08;Vigente;4;Tablero
+R0094;Libro;Quimica 94;C019;2026-11-22 18:08;Vigente;Autor 13;978-00093;2012
+R0095;Equipo;Laptop 95;C011;2026-11-22 18:08;Vigente;Portatil;M94;Bodega
+R0096;Sala;Sala 96;C003;2026-11-22 18:08;Vigente;38;Tablero
+R0097;Libro;Fisica 97;C018;2026-11-22 18:08;Vigente;Autor 16;978-00096;2019
+R0098;Equipo;Laptop 98;C011;2026-11-22 18:08;Vigente;Portatil;M97;Bodega
+R0099;Sala;Sala 99;C004;2026-11-22 18:08;Vigente;39;Tablero
+R0100;Libro;Redes 100;C016;2026-11-22 18:08;Vigente;Autor 19;978-00099;1990
+R0101;Equipo;Laptop 101;C011;2026-11-22 18:08;Vigente;Portatil;M100;Bodega
+R0102;Sala;Sala 102;C003;2026-11-22 18:08;Vigente;30;Tablero
+R0103;Libro;Bases de Datos 103;C017;2026-11-22 18:08;En reparación;Autor 22;978-00102;1984
+R0104;Equipo;Laptop 104;C011;2026-11-22 18:08;Vigente;Portatil;M103;Bodega
+R0105;Sala;Sala 105;C007;2026-11-22 18:08;Vigente;18;Tablero
+R0106;Libro;Biologia 106;C023;2026-11-22 18:08;Vigente;Autor 25;978-00105;2015
+R0107;Equipo;Laptop 107;C011;2026-11-22 18:08;Vigente;Portatil;M106;Bodega
+R0108;Sala;Sala 108;C006;2026-11-22 18:08;Vigente;25;Tablero
+R0109;Libro;Robotica 109;C026;2026-11-22 18:08;Vigente;Autor 28;978-00108;1981
+R0110;Equipo;Laptop 110;C011;2026-11-22 18:08;Vigente;Portatil;M109;Bodega
+R0111;Sala;Sala 111;C004;2026-11-22 18:08;Vigente;14;Tablero
+R0112;Libro;Literatura 112;C024;2026-11-22 18:08;Vigente;Autor 31;978-00111;1984
+R0113;Equipo;Computador 113;C010;2026-11-22 18:08;Vigente;Computador;M112;Sala de computo
+R0114;Sala;Sala 114;C002;2026-11-22 18:08;Vigente;11;Tablero
+R0115;Libro;Calculo 115;C014;2026-11-22 18:08;Vigente;Autor 34;978-00114;2021
+R0116;Equipo;Laptop 116;C011;2026-11-22 18:08;Vigente;Portatil;M115;Bodega
+R0117;Sala;Sala 117;C006;2026-11-22 18:08;Vigente;22;Tablero
+R0118;Libro;Arte 118;C025;2026-11-22 18:08;Vigente;Autor 37;978-00117;1986
+R0119;Equipo;Computador 119;C010;2026-11-22 18:08;Vigente;Computador;M118;Sala de computo
+R0120;Sala;Sala 120;C004;2026-11-22 18:08;Vigente;16;Tablero
+R0121;Libro;Literatura 121;C024;2026-11-22 18:08;Vigente;Autor 0;978-00120;1991
+R0122;Equipo;Laptop 122;C011;2026-11-22 18:08;Vigente;Portatil;M121;Bodega
+R0123;Sala;Sala 123;C002;2026-11-22 18:08;Vigente;39;Tablero
+R0124;Libro;Literatura 124;C024;2026-11-22 18:08;Vigente;Autor 3;978-00123;1985
+R0125;Equipo;Computador 125;C010;2026-11-22 18:08;Vigente;Computador;M124;Sala de computo
+R0126;Sala;Sala 126;C004;2026-11-22 18:08;Vigente;6;Tablero
+R0127;Libro;Python 127;C015;2026-11-22 18:08;Vigente;Autor 6;978-00126;2009
+R0128;Equipo;Computador 128;C010;2026-11-22 18:08;Vigente;Computador;M127;Sala de computo
+R0129;Sala;Sala 129;C003;2026-11-22 18:08;Vigente;13;Tablero
+R0130;Libro;Redes 130;C016;2026-11-22 18:08;Vigente;Autor 9;978-00129;1996
+R0131;Equipo;Computador 131;C010;2026-11-22 18:08;Vigente;Computador;M130;Sala de computo
+R0132;Sala;Sala 132;C004;2026-11-22 18:08;Vigente;10;Tablero
+R0133;Libro;Robotica 133;C026;2026-11-22 18:08;Vigente;Autor 12;978-00132;2007
+R0134;Equipo;Computador 134;C010;2026-11-22 18:08;Vigente;Computador;M133;Sala de computo
+R0135;Sala;Sala 135;C003;2026-11-22 18:08;Vigente;30;Tablero
+R0136;Libro;Quimica 136;C019;2026-11-22 18:08;Vigente;Autor 15;978-00135;2000
+R0137;Equipo;Computador 137;C010;2026-11-22 18:08;Vigente;Computador;M136;Sala de computo
+R0138;Sala;Sala 138;C007;2026-11-22 18:08;Vigente;15;Tablero
+R0139;Libro;Bases de Datos 139;C017;2026-11-22 18:08;Vigente;Autor 18;978-00138;2014
+R0140;Equipo;Computador 140;C010;2026-11-22 18:08;Vigente;Computador;M139;Sala de computo
+R0141;Sala;Sala 141;C005;2026-11-22 18:08;Vigente;25;Tablero
+R0142;Libro;Arte 142;C025;2026-11-22 18:08;Vigente;Autor 21;978-00141;1987
+R0143;Equipo;Laptop 143;C011;2026-11-22 18:08;Vigente;Portatil;M142;Bodega
+R0144;Sala;Sala 144;C003;2026-11-22 18:08;Vigente;10;Tablero
+R0145;Libro;Python 145;C015;2026-11-22 18:08;Vigente;Autor 24;978-00144;1988
+R0146;Equipo;Computador 146;C010;2026-11-22 18:08;Vigente;Computador;M145;Sala de computo
+R0147;Sala;Sala 147;C004;2026-11-22 18:08;Vigente;18;Tablero
+R0148;Libro;Algebra 148;C013;2026-11-22 18:08;Vigente;Autor 27;978-00147;1997
+R0149;Equipo;Computador 149;C010;2026-11-22 18:08;Vigente;Computador;M148;Sala de computo
+R0150;Sala;Sala 150;C004;2026-11-22 18:08;Vigente;40;Tablero
+R0151;Libro;Redes 151;C016;2026-11-22 18:08;Vigente;Autor 30;978-00150;1984
+R0152;Equipo;Computador 152;C010;2026-11-22 18:08;Sin uso;Computador;M151;Sala de computo
+R0153;Sala;Sala 153;C003;2026-11-22 18:08;Vigente;38;Tablero
+R0154;Libro;Historia 154;C020;2026-11-22 18:08;Vigente;Autor 33;978-00153;2024
+R0155;Equipo;Laptop 155;C011;2026-11-22 18:08;Vigente;Portatil;M154;Bodega
+R0156;Sala;Sala 156;C003;2026-11-22 18:08;Vigente;33;Tablero
+R0157;Libro;Estadistica 157;C022;2026-11-22 18:08;Vigente;Autor 36;978-00156;1980
+R0158;Equipo;Laptop 158;C011;2026-11-22 18:08;Vigente;Portatil;M157;Bodega
+R0159;Sala;Sala 159;C007;2026-11-22 18:08;Vigente;6;Tablero
+R0160;Libro;Arte 160;C025;2026-11-22 18:08;Vigente;Autor 39;978-00159;1989
+R0161;Equipo;Computador 161;C010;2026-11-22 18:08;Vigente;Computador;M160;Sala de computo
+R0162;Sala;Sala 162;C006;2026-11-22 18:08;Vigente;20;Tablero
+R0163;Libro;Fisica 163;C018;2026-11-22 18:08;Vigente;Autor 2;978-00162;2012
+R0164;Equipo;Laptop 164;C011;2026-11-22 18:08;Vigente;Portatil;M163;Bodega
+R0165;Sala;Sala 165;C005;2026-11-22 18:08;Vigente;39;Tablero
+R0166;Libro;Algebra 166;C013;2026-11-22 18:08;Vigente;Autor 5;978-00165;1982
+R0167;Equipo;Computador 167;C010;2026-11-22 18:08;Vigente;Computador;M166;Sala de computo
+R0168;Sala;Sala 168;C002;2026-11-22 18:08;Vigente;15;Tablero
+R0169;Libro;Fisica 169;C018;2026-11-22 18:08;Vigente;Autor 8;978-00168;1988
+R0170;Equipo;Laptop 170;C011;2026-11-22 18:08;Vigente;Portatil;M169;Bodega
+R0171;Sala;Sala 171;C005;2026-11-22 18:08;Vigente;11;Tablero
+R0172;Libro;Estadistica 172;C022;2026-11-22 18:08;Vigente;Autor 11;978-00171;2017
+R0173;Equipo;Computador 173;C010;2026-11-22 18:08;Vigente;Computador;M172;Sala de computo
+R0174;Sala;Sala 174;C002;2026-11-22 18:08;Vigente;11;Tablero
+R0175;Libro;Literatura 175;C024;2026-11-22 18:08;Vigente;Autor 14;978-00174;2016
+R0176;Equipo;Computador 176;C010;2026-11-22 18:08;Vigente;Computador;M175;Sala de computo
+R0177;Sala;Sala 177;C002;2026-11-22 18:08;Vigente;6;Tablero
+R0178;Libro;Literatura 178;C024;2026-11-22 18:08;Vigente;Autor 17;978-00177;2018
+R0179;Equipo;Laptop 179;C011;2026-11-22 18:08;Vigente;Portatil;M178;Bodega
+R0180;Sala;Sala 180;C005;2026-11-22 18:08;Vigente;30;Tablero
+R0181;Libro;Bases de Datos 181;C017;2026-11-22 18:08;Vigente;Autor 20;978-00180;1983
+R0182;Equipo;Computador 182;C010;2026-11-22 18:08;Vigente;Computador;M181;Sala de computo
+R0183;Sala;Sala 183;C005;2026-11-22 18:08;Dañado;18;Tablero
+R0184;Libro;Python 184;C015;2026-11-22 18:08;Vigente;Autor 23;978-00183;2017
+R0185;Equipo;Computador 185;C010;2026-11-22 18:08;Vigente;Computador;M184;Sala de computo
+R0186;Sala;Sala 186;C005;2026-11-22 18:08;Vigente;35;Tablero
+R0187;Libro;Historia 187;C020;2026-11-22 18:08;Vigente;Autor 26;978-00186;1993
+R0188;Equipo;Computador 188;C010;2026-11-22 18:08;Vigente;Computador;M187;Sala de computo
+R0189;Sala;Sala 189;C004;2026-11-22 18:08;Vigente;37;Tablero
+R0190;Libro;Calculo 190;C014;2026-11-22 18:08;Vigente;Autor 29;978-00189;1991
+R0191;Equipo;Computador 191;C010;2026-11-22 18:08;Vigente;Computador;M190;Sala de computo
+R0192;Sala;Sala 192;C002;2026-11-22 18:08;Vigente;33;Tablero
+R0193;Libro;Estadistica 193;C022;2026-11-22 18:08;Vigente;Autor 32;978-00192;1981
+R0194;Equipo;Laptop 194;C011;2026-11-22 18:08;Vigente;Portatil;M193;Bodega
+R0195;Sala;Sala 195;C002;2026-11-22 18:08;Vigente;20;Tablero
+R0196;Libro;Algebra 196;C013;2026-11-22 18:08;Vigente;Autor 35;978-00195;1982
+R0197;Equipo;Laptop 197;C011;2026-11-22 18:08;Vigente;Portatil;M196;Bodega
+R0198;Sala;Sala 198;C007;2026-11-22 18:08;Vigente;9;Tablero
+R0199;Libro;Redes 199;C016;2026-11-22 18:08;Vigente;Autor 38;978-00198;1994
+R0200;Equipo;Computador 200;C010;2026-11-22 18:08;Vigente;Computador;M199;Sala de computo

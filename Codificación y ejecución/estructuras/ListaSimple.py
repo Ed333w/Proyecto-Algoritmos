@@ -1,104 +1,54 @@
+"""Lista enlazada simple (cada nodo apunta al siguiente) con referencia a la cola.
+
+Complejidad: agregar al inicio o al final O(1), eliminar al inicio O(1),
+buscar y eliminar por criterio O(n).
+"""
+
+from .ListaEnlazada import ListaEnlazada
+
+
 class NodoSimple:
+    __slots__ = ("dato", "siguiente")
 
     def __init__(self, dato):
         self.dato = dato
         self.siguiente = None
 
-    def __str__(self):
-        return f"NodoSimple({self.dato})"
 
+class ListaSimple(ListaEnlazada):
 
-class ListaSimple:
-
-    def __init__(self):
-        """Inicializa lista vacía."""
-        self.cabeza = None
-        self.tamaño = 0
-
-    # Agrega un elemento al inicio de la lista
     def agregarAlInicio(self, dato):
-        nuevoNodo = NodoSimple(dato)
-        nuevoNodo.siguiente = self.cabeza
-        self.cabeza = nuevoNodo
+        nodo = NodoSimple(dato)
+        nodo.siguiente = self.cabeza
+        self.cabeza = nodo
+        if self.cola is None:
+            self.cola = nodo
         self.tamaño += 1
 
-    # Agrega un elemento al final de la lista
     def agregarAlFinal(self, dato):
-        nuevoNodo = NodoSimple(dato)
-
-        if self.cabeza is None:
-            self.cabeza = nuevoNodo
+        nodo = NodoSimple(dato)
+        if self.cola is None:
+            self.cabeza = nodo
         else:
-            actual = self.cabeza
-            while actual.siguiente is not None:
-                actual = actual.siguiente
-            actual.siguiente = nuevoNodo
-
+            self.cola.siguiente = nodo
+        self.cola = nodo
         self.tamaño += 1
 
-    # Elimina el primer nodo de la lista y devuelve su dato
     def eliminarInicio(self):
-        if self.cabeza is None:
-            return None
+        return self.eliminar(lambda _: True)
 
-        dato = self.cabeza.dato
-        self.cabeza = self.cabeza.siguiente
-        self.tamaño -= 1
-        return dato
-
-    # Elimina el último nodo de la lista y devuelve su dato
-    def eliminarFinal(self):
-        if self.cabeza is None:
-            return None
-
-        if self.cabeza.siguiente is None:
-            dato = self.cabeza.dato
-            self.cabeza = None
-            self.tamaño -= 1
-            return dato
-
-        actual = self.cabeza
-        while actual.siguiente.siguiente is not None:
-            actual = actual.siguiente
-
-        dato = actual.siguiente.dato
-        actual.siguiente = None
-        self.tamaño -= 1
-        return dato
-
-    # Busca un elemento en la lista y devuelve su dato
-    def buscar(self, criterioFn):
-        actual = self.cabeza
+    def eliminar(self, criterioFn):
+        """Quita el primer elemento que cumple el criterio y lo devuelve (o None)."""
+        previo, actual = None, self.cabeza
         while actual is not None:
             if criterioFn(actual.dato):
+                if previo is None:
+                    self.cabeza = actual.siguiente
+                else:
+                    previo.siguiente = actual.siguiente
+                if actual is self.cola:
+                    self.cola = previo
+                self.tamaño -= 1
                 return actual.dato
-            actual = actual.siguiente
+            previo, actual = actual, actual.siguiente
         return None
-
-    #   Recorre todos los elementos de la lista y devuelve una lista con ellos
-    def recorrer(self):
-        resultado = []
-        actual = self.cabeza
-        while actual is not None:
-            resultado.append(actual.dato)
-            actual = actual.siguiente
-        return resultado
-
-    # Obtiene el tamaño de la lista
-    def obtenerTamaño(self):
-        return self.tamaño
-
-    # Verifica si la lista está vacía
-    def estaVacia(self):
-        return self.tamaño == 0
-
-    # Limpia la lista, eliminando todos los elementos
-    def limpiar(self):
-        self.cabeza = None
-        self.tamaño = 0
-
-    def __str__(self):
-        return f"ListaSimple({self.recorrer()})"
-
-    def __repr__(self):
-        return self.__str__()

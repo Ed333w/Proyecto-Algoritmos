@@ -1,0 +1,8 @@
+recurso;condicion;desde
+R0053;Dañado;2026-11-15 18:08
+R0008;Dañado;2026-10-27 18:08
+R0183;Dañado;2026-10-29 18:08
+R0103;En reparación;2026-11-13 18:08
+R0015;En reparación;2026-10-26 18:08
+R0152;Sin uso;2026-10-26 18:08
+R0005;Sin uso;2026-10-26 18:08

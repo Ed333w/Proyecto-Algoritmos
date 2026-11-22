@@ -13,7 +13,7 @@ def reporteUso(sesion):
 
 
 def reporteInventario(sesion):
-    tabla(("Tipo", "Registrados", "Vigentes", "Unidades disponibles"), sesion.sistema.informes.reporteInventario())
+    tabla(("Tipo", "Registrados", "Operativos", "Unidades disponibles"), sesion.sistema.informes.reporteInventario())
     print("\n  El detalle por sede está en Inventario (M07).")
 
 

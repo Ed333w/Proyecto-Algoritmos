@@ -1,29 +1,31 @@
-def _id(x):
+"""Ordenamientos y búsquedas propios.
+
+Todos los ordenamientos reciben 'clave' (qué comparar) y 'reverso' (de mayor a
+menor) y devuelven una lista nueva sin modificar la original.
+
+- insercion: básico, O(n²); estable. Rápido con listas pequeñas o casi ordenadas.
+- mergeSort: avanzado, O(n log n) siempre; estable.
+- quickSort: avanzado, O(n log n) promedio, O(n²) peor caso; pivote central.
+
+Búsquedas (devuelven el índice o -1):
+- busquedaSecuencial: O(n), no necesita orden.
+- busquedaBinaria / busquedaBinariaRecursiva: O(log n), requieren la lista
+  ordenada por la misma clave; con claves repetidas devuelven la primera.
+"""
+
+
+def _identidad(x):
     return x
 
 
 def _antes(a, b, reverso):
-    """True si la clave a debe ir ESTRICTAMENTE antes que la clave b."""
+    """True si la clave a debe ir estrictamente antes que la clave b."""
     return a > b if reverso else a < b
 
 
-# Ordenamientos
+# ---------------- Ordenamientos ----------------
 
-def bubbleSort(datos, clave=_id, reverso=False):
-    a = list(datos)
-    n = len(a)
-    for i in range(n):
-        intercambio = False
-        for j in range(n - i - 1):
-            if _antes(clave(a[j + 1]), clave(a[j]), reverso):
-                a[j], a[j + 1] = a[j + 1], a[j]
-                intercambio = True
-        if not intercambio:
-            break
-    return a
-
-
-def insercion(datos, clave=_id, reverso=False):
+def insercion(datos, clave=_identidad, reverso=False):
     a = list(datos)
     for i in range(1, len(a)):
         actual = a[i]
@@ -36,86 +38,84 @@ def insercion(datos, clave=_id, reverso=False):
     return a
 
 
-def mergeSort(datos, clave=_id, reverso=False):
+def mergeSort(datos, clave=_identidad, reverso=False):
     a = list(datos)
     if len(a) <= 1:
         return a
     medio = len(a) // 2
     izq = mergeSort(a[:medio], clave, reverso)
     der = mergeSort(a[medio:], clave, reverso)
-    res = []
+    resultado = []
     i = j = 0
     while i < len(izq) and j < len(der):
-        # solo toma de la derecha si va estrictamente antes -> estabilidad
+        # solo toma de la derecha si va estrictamente antes: así es estable
         if _antes(clave(der[j]), clave(izq[i]), reverso):
-            res.append(der[j])
+            resultado.append(der[j])
             j += 1
         else:
-            res.append(izq[i])
+            resultado.append(izq[i])
             i += 1
-    res.extend(izq[i:])
-    res.extend(der[j:])
-    return res
+    resultado.extend(izq[i:])
+    resultado.extend(der[j:])
+    return resultado
 
 
-def quickSort(datos, clave=_id, reverso=False):
+def quickSort(datos, clave=_identidad, reverso=False):
     a = list(datos)
-    _qs(a, 0, len(a) - 1, clave, reverso)
+    _quickSort(a, 0, len(a) - 1, clave, reverso)
     return a
 
 
-def _qs(a, lo, hi, clave, reverso):
-    while lo < hi:
-        piv = clave(a[(lo + hi) // 2])
-        i, j = lo, hi
+def _quickSort(a, inicio, fin, clave, reverso):
+    while inicio < fin:
+        pivote = clave(a[(inicio + fin) // 2])
+        i, j = inicio, fin
         while i <= j:
-            while _antes(clave(a[i]), piv, reverso):
+            while _antes(clave(a[i]), pivote, reverso):
                 i += 1
-            while _antes(piv, clave(a[j]), reverso):
+            while _antes(pivote, clave(a[j]), reverso):
                 j -= 1
             if i <= j:
                 a[i], a[j] = a[j], a[i]
                 i += 1
                 j -= 1
-        if j - lo < hi - i:
-            _qs(a, lo, j, clave, reverso)
-            lo = i
+        # recursión sobre la parte pequeña y ciclo sobre la grande: profundidad O(log n)
+        if j - inicio < fin - i:
+            _quickSort(a, inicio, j, clave, reverso)
+            inicio = i
         else:
-            _qs(a, i, hi, clave, reverso)
-            hi = j
+            _quickSort(a, i, fin, clave, reverso)
+            fin = j
 
 
-# Búsquedas (devuelven el índice, o -1 si no existe)
-def busquedaSecuencial(datos, objetivo, clave=_id):
-    for i, x in enumerate(datos):
-        if clave(x) == objetivo:
+# ---------------- Búsquedas ----------------
+
+def busquedaSecuencial(datos, objetivo, clave=_identidad):
+    for i, elemento in enumerate(datos):
+        if clave(elemento) == objetivo:
             return i
     return -1
 
 
-def busquedaBinaria(datos, objetivo, clave=_id):
-    lo, hi = 0, len(datos) - 1
-    while lo <= hi:
-        mid = (lo + hi) // 2
-        k = clave(datos[mid])
-        if k == objetivo:
-            return mid
-        if k < objetivo:
-            lo = mid + 1
+def busquedaBinaria(datos, objetivo, clave=_identidad):
+    inicio, fin = 0, len(datos)
+    while inicio < fin:                      # primera posición con clave >= objetivo
+        medio = (inicio + fin) // 2
+        if clave(datos[medio]) < objetivo:
+            inicio = medio + 1
         else:
-            hi = mid - 1
+            fin = medio
+    if inicio < len(datos) and clave(datos[inicio]) == objetivo:
+        return inicio
     return -1
 
 
-def busquedaBinariaRecursiva(datos, objetivo, clave=_id, lo=0, hi=None):
-    if hi is None:
-        hi = len(datos) - 1
-    if lo > hi:
-        return -1
-    mid = (lo + hi) // 2
-    k = clave(datos[mid])
-    if k == objetivo:
-        return mid
-    if k < objetivo:
-        return busquedaBinariaRecursiva(datos, objetivo, clave, mid + 1, hi)
-    return busquedaBinariaRecursiva(datos, objetivo, clave, lo, mid - 1)
+def busquedaBinariaRecursiva(datos, objetivo, clave=_identidad, inicio=0, fin=None):
+    if fin is None:
+        fin = len(datos)
+    if inicio >= fin:
+        return inicio if inicio < len(datos) and clave(datos[inicio]) == objetivo else -1
+    medio = (inicio + fin) // 2
+    if clave(datos[medio]) < objetivo:
+        return busquedaBinariaRecursiva(datos, objetivo, clave, medio + 1, fin)
+    return busquedaBinariaRecursiva(datos, objetivo, clave, inicio, medio)

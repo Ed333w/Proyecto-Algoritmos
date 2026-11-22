@@ -19,6 +19,16 @@ def mostrarVencimientos(sistema, dias=2):
     tabla(("Préstamo", "Usuario", "Correo", "Recurso", "Sede", "Vence"), filas)
 
 
+def mostrarNoOperativos(sistema):
+    """RQF-051: aviso al abrir el programa con los recursos que no están operativos."""
+    resumen = sistema.asistente.resumenNoOperativos()
+    if not resumen:
+        print("  Todos los recursos están operativos.")
+        return
+    print("  Recursos fuera de servicio: " + ", ".join(f"{n} {c.lower()}" for c, n in resumen)
+          + ". Detalle en el asistente (M08) > Alertas priorizadas.")
+
+
 def redistribucion(sesion):
     asistente = sesion.sistema.asistente
     codigo = leer("Código del recurso (Enter para todos): ") or None
@@ -37,17 +47,22 @@ def redistribucion(sesion):
 
 def compras(sesion):
     cantidad = leerEntero("¿Cuántos recursos mostrar? (Enter = 5): ", 5)
-    tabla(("Recurso", "Nombre", "Índice", "En fila", "Préstamos 30 d", "Unidades"),
-          [(r.codigo, r.nombre, indice, fila, usos, unidades)
-           for r, indice, fila, usos, unidades in sesion.sistema.asistente.priorizarCompras(cantidad)],
+    tabla(("Recurso", "Nombre", "Índice", "En fila", "Préstamos 30 d", "Unidades", "Acción"),
+          [(r.codigo, r.nombre, indice, fila, usos, unidades, accion)
+           for r, indice, fila, usos, unidades, accion in sesion.sistema.asistente.priorizarCompras(cantidad)],
           vacio="(no hay demanda sin atender)")
     print("\n  Índice = (2 × personas en fila + préstamos de los últimos 30 días) / (unidades + 1)")
+    print("  Un recurso dañado o en reparación cuenta con 0 unidades: se propone repararlo o reponerlo.")
 
 
 def prediccion(sesion):
     p = sesion.sistema.asistente.predecirDisponibilidad(leer("Código del recurso: "))
     r = p["recurso"]
     print(f"\n  {r.codigo} {r.nombre}")
+    if not p["operativo"]:
+        print(f"  No está operativo ({p['condicion'].lower()}): no se presta ni se recomienda hasta que "
+              f"vuelva a Operativo en Inventario (M07).")
+        return
     print(f"  Duración promedio de sus préstamos: {p['promedioDias']} días "
           f"({p['muestras']} devoluciones, confianza {int(p['confianza'] * 100)}%)")
     if p["disponibleAhora"]:

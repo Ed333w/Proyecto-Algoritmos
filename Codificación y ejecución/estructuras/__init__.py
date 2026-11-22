@@ -1,31 +1,22 @@
+"""Estructuras de datos propias del proyecto (sin list, dict ni set como almacenamiento)."""
+
 from .VectorDinamico import VectorDinamico
+from .ListaEnlazada import ListaEnlazada
 from .ListaSimple import ListaSimple, NodoSimple
 from .ListaDoble import ListaDoble, NodoDoble
 from .Pila import Pila
 from .ColaFIFO import ColaFIFO
-
-# Entrega 2: el sistema usa la tabla hash djb2 (tamaño primo + redimensionamiento).
-# La tabla de suma ASCII de la Entrega 1 se conserva solo para comparar (opción 10 del menú).
-from .TablaHash import TablaHash as TablaHashASCII
-from .Estructuras import TablaHash, ConjuntoHash
-from .ArbolBinario import ArbolBinario, NodoArbol
-from .Grafo import Grafo as GrafoBasico
+from .TablaHash import TablaHash, hashDjb2, hashSumaAscii, primoSiguiente
+from .ConjuntoHash import ConjuntoHash
+from .ArbolBinarioBusqueda import ArbolBinarioBusqueda, NodoArbol
+from .ArbolAVL import ArbolAVL
+from .Monticulo import Monticulo
+from .Grafo import Grafo
+from . import Algoritmos
 
 __all__ = [
-    # Entrega 1
-    'VectorDinamico',
-    'ListaSimple',
-    'NodoSimple',
-    'ListaDoble',
-    'NodoDoble',
-    'Pila',
-    'ColaFIFO',
-    # Entrega 2
-    'TablaHash',
-    'TablaHashASCII',
-    'ConjuntoHash',
-    'ArbolBinario',
-    'NodoArbol',
-    # Entrega 2/3
-    'GrafoBasico',
+    "VectorDinamico", "ListaEnlazada", "ListaSimple", "NodoSimple", "ListaDoble", "NodoDoble",
+    "Pila", "ColaFIFO", "TablaHash", "hashDjb2", "hashSumaAscii", "primoSiguiente",
+    "ConjuntoHash", "ArbolBinarioBusqueda", "NodoArbol", "ArbolAVL", "Monticulo",
+    "Grafo", "Algoritmos",
 ]

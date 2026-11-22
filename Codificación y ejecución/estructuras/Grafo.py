@@ -1,202 +1,187 @@
-## Hecho por claude puesto que no hemos visto grafos
+"""Grafo no dirigido y no ponderado con lista de adyacencia propia.
 
-"""
-GRAFO BÁSICO — Estructura de datos propia
-
-Descripción:
-    Grafo no dirigido simple con lista de adyacencia.
-    Implementado sin usar dict o list nativos de Python.
-    Usado en M07 para conectar sedes en red.
-
-Implementación:
-    - Arreglo de nodos vértice
-    - Cada vértice contiene lista enlazada de vecinos
-
-Complejidad:
-    - BFS/DFS: O(V + E) donde V=vértices, E=aristas
+- Vértices: tabla hash  id -> lista enlazada simple de vecinos.
+- BFS con cola FIFO propia y conjunto propio de visitados: O(V + E).
+- Camino más corto en número de tramos con BFS y reconstrucción por padres.
+- DFS con pila propia y búsqueda de caminos con backtracking recursivo.
 """
 
-
-class _NodoVecino:
-    """Nodo para lista enlazada de vecinos."""
-    def __init__(self, id_vecino):
-        self.id = id_vecino
-        self.siguiente = None
-
-
-class _NodoVertice:
-    """Nodo para almacenar un vértice y sus vecinos."""
-    def __init__(self, id_vertice):
-        self.id = id_vertice
-        self.vecinos = None  # Cabecera de lista enlazada de vecinos
-        self.siguiente = None  # Para lista de vértices
+from .TablaHash import TablaHash
+from .ConjuntoHash import ConjuntoHash
+from .ListaSimple import ListaSimple
+from .ColaFIFO import ColaFIFO
+from .VectorDinamico import VectorDinamico
+from .Pila import Pila
+from .Algoritmos import mergeSort
 
 
 class Grafo:
-    """
-    Grafo no dirigido con lista de adyacencia.
-
-    Atributos:
-        vertices (NodoVertice): Lista enlazada de vértices
-        cantidad_vertices (int): Cantidad de vértices
-        cantidad_aristas (int): Cantidad de aristas
-    """
 
     def __init__(self):
-        """Inicializa grafo vacío."""
-        self.vertices = None  # Cabecera de lista de vértices
-        self.cantidad_vertices = 0
-        self.cantidad_aristas = 0
+        self._adyacencia = TablaHash(53)
+        self._orden = VectorDinamico()  # orden de alta, para recorrer de forma predecible
+        self.cantidadAristas = 0
 
-    def agregar_vertice(self, id_vertice):
-        """Agrega un vértice. O(1) si no existe."""
-        # Verificar si ya existe
-        nodo = self.vertices
-        while nodo is not None:
-            if nodo.id == id_vertice:
-                return  # Ya existe
-            nodo = nodo.siguiente
+    # ---- construcción ----
+    def agregarVertice(self, vertice):
+        if self._adyacencia.contiene(vertice):
+            return False
+        self._adyacencia.insertar(vertice, ListaSimple())
+        self._orden.agregar(vertice)
+        return True
 
-        # No existe, agregar al inicio
-        nuevo = _NodoVertice(id_vertice)
-        nuevo.siguiente = self.vertices
-        self.vertices = nuevo
-        self.cantidad_vertices += 1
+    def existeVertice(self, vertice):
+        return self._adyacencia.contiene(vertice)
 
-    def agregar_arista(self, origen, destino):
-        """Agrega arista entre dos vértices. O(V)."""
-        # Ambos vértices deben existir
-        self.agregar_vertice(origen)
-        self.agregar_vertice(destino)
+    def _vecinosDe(self, vertice):
+        lista = self._adyacencia.buscar(vertice)
+        if lista is None:
+            raise ValueError(f"El vértice '{vertice}' no existe")
+        return lista
 
-        # Agregar destino a lista de vecinos de origen
-        nodo_origen = self._buscar_vertice(origen)
-        if nodo_origen is not None:
-            if not self._tiene_vecino(nodo_origen, destino):
-                nuevo_vecino = _NodoVecino(destino)
-                nuevo_vecino.siguiente = nodo_origen.vecinos
-                nodo_origen.vecinos = nuevo_vecino
+    def existeArista(self, a, b):
+        return self.existeVertice(a) and self._vecinosDe(a).buscar(lambda v: v == b) is not None
 
-        # Grafo no dirigido: agregar origen a lista de vecinos de destino
-        nodo_destino = self._buscar_vertice(destino)
-        if nodo_destino is not None:
-            if not self._tiene_vecino(nodo_destino, origen):
-                nuevo_vecino = _NodoVecino(origen)
-                nuevo_vecino.siguiente = nodo_destino.vecinos
-                nodo_destino.vecinos = nuevo_vecino
+    def agregarArista(self, a, b):
+        if a == b:
+            raise ValueError("Una sede no se puede conectar consigo misma")
+        self._vecinosDe(a)
+        self._vecinosDe(b)
+        if self.existeArista(a, b):
+            return False
+        self._vecinosDe(a).agregarAlFinal(b)
+        self._vecinosDe(b).agregarAlFinal(a)
+        self.cantidadAristas += 1
+        return True
 
-        self.cantidad_aristas += 1
+    def eliminarArista(self, a, b):
+        if not self.existeArista(a, b):
+            return False
+        self._vecinosDe(a).eliminar(lambda v: v == b)
+        self._vecinosDe(b).eliminar(lambda v: v == a)
+        self.cantidadAristas -= 1
+        return True
 
-    def _buscar_vertice(self, id_vertice):
-        """Busca un vértice por ID. O(V)."""
-        nodo = self.vertices
-        while nodo is not None:
-            if nodo.id == id_vertice:
-                return nodo
-            nodo = nodo.siguiente
-        return None
+    # ---- consultas ----
+    def vecinos(self, vertice):
+        return self._vecinosDe(vertice).recorrer()
 
-    def _tiene_vecino(self, nodo_vertice, id_vecino):
-        """Verifica si un vértice ya tiene un vecino. O(grado)."""
-        vecino = nodo_vertice.vecinos
-        while vecino is not None:
-            if vecino.id == id_vecino:
-                return True
-            vecino = vecino.siguiente
-        return False
+    def vertices(self):
+        return self._orden.recorrer()
 
-    def obtener_vecinos(self, id_vertice):
-        """Obtiene lista de vecinos de un vértice. O(grado)."""
-        nodo = self._buscar_vertice(id_vertice)
-        if nodo is None:
-            return []
-
-        vecinos = []
-        vecino_nodo = nodo.vecinos
-        while vecino_nodo is not None:
-            vecinos.append(vecino_nodo.id)
-            vecino_nodo = vecino_nodo.siguiente
-        return vecinos
-
-    def obtener_vertices(self):
-        """Obtiene lista de todos los vértices. O(V)."""
-        vertices = []
-        nodo = self.vertices
-        while nodo is not None:
-            vertices.append(nodo.id)
-            nodo = nodo.siguiente
-        return vertices
-
-    def obtener_cantidad_vertices(self):
-        """Obtiene cantidad de vértices. O(1)."""
-        return self.cantidad_vertices
-
-    def obtener_cantidad_aristas(self):
-        """Obtiene cantidad de aristas. O(1)."""
-        return self.cantidad_aristas
-
-    def recorrido_amplitud(self, id_inicio):
-        """
-        BFS (Breadth-First Search).
-
-        Returns:
-            Lista de vértices en orden BFS
-
-        Complejidad: O(V + E)
-        """
-        if self._buscar_vertice(id_inicio) is None:
-            return []
-
-        # Usar arreglo para visitados y cola manual
-        visitados = []
-        cola = []
+    def aristas(self):
+        """Cada arista una sola vez, como (a, b)."""
+        vistas = ConjuntoHash()
         resultado = []
+        for a in self.vertices():
+            for b in self.vecinos(a):
+                if not vistas.contiene((b, a)):
+                    vistas.agregar((a, b))
+                    resultado.append((a, b))
+        return resultado
 
-        cola.append(id_inicio)
-        visitados.append(id_inicio)
+    def cantidadVertices(self):
+        return len(self._orden)
 
-        while len(cola) > 0:
-            actual = cola.pop(0)
+    # ---- BFS ----
+    def recorridoAmplitud(self, inicio):
+        """Devuelve [(vértice, distancia en tramos)] en orden BFS."""
+        self._vecinosDe(inicio)
+        distancias = TablaHash()
+        distancias.insertar(inicio, 0)
+        cola = ColaFIFO()
+        cola.encolar(inicio)
+        resultado = []
+        while not cola.estaVacia():
+            actual = cola.desencolar()
+            resultado.append((actual, distancias.buscar(actual)))
+            for vecino in self._vecinosDe(actual):
+                if not distancias.contiene(vecino):
+                    distancias.insertar(vecino, distancias.buscar(actual) + 1)
+                    cola.encolar(vecino)
+        return resultado
+
+    def caminoMasCorto(self, origen, destino):
+        """Lista de vértices de origen a destino con el menor número de tramos, o [] si no hay ruta."""
+        self._vecinosDe(origen)
+        self._vecinosDe(destino)
+        padres = TablaHash()
+        padres.insertar(origen, None)
+        cola = ColaFIFO()
+        cola.encolar(origen)
+        while not cola.estaVacia():
+            actual = cola.desencolar()
+            if actual == destino:
+                camino = []
+                while actual is not None:
+                    camino.append(actual)
+                    actual = padres.buscar(actual)
+                return camino[::-1]
+            for vecino in self._vecinosDe(actual):
+                if not padres.contiene(vecino):
+                    padres.insertar(vecino, actual)
+                    cola.encolar(vecino)
+        return []
+
+    # ---- DFS (con pila propia) ----
+    def recorridoProfundidad(self, inicio):
+        self._vecinosDe(inicio)
+        visitados = ConjuntoHash()
+        return self._dfs(inicio, visitados)
+
+    def _dfs(self, inicio, visitados):
+        """DFS iterativo: la pila propia reemplaza a la pila de llamadas, así una red
+        larga no supera el límite de recursión de Python. Visita en el mismo orden
+        que la versión recursiva (los vecinos se apilan al revés)."""
+        resultado = []
+        pila = Pila()
+        pila.push(inicio)
+        while not pila.estaVacia():
+            actual = pila.pop()
+            if visitados.contiene(actual):
+                continue
+            visitados.agregar(actual)
             resultado.append(actual)
-
-            # Agregar vecinos no visitados a la cola
-            for vecino in self.obtener_vecinos(actual):
-                if vecino not in visitados:
-                    cola.append(vecino)
-                    visitados.append(vecino)
-
+            for vecino in self.vecinos(actual)[::-1]:
+                if not visitados.contiene(vecino):
+                    pila.push(vecino)
         return resultado
 
-    def recorrido_profundidad(self, id_inicio):
-        """
-        DFS (Depth-First Search).
+    def componentesConexas(self):
+        """Grupos de vértices conectados entre sí, del más grande al más pequeño."""
+        visitados = ConjuntoHash()
+        componentes = [self._dfs(v, visitados) for v in self.vertices() if not visitados.contiene(v)]
+        return mergeSort(componentes, clave=len, reverso=True)
 
-        Returns:
-            Lista de vértices en orden DFS
+    # ---- Backtracking (recursivo) ----
+    def todosLosCaminos(self, origen, destino, maximo=10, maxTramos=None):
+        """Caminos simples de origen a destino, del más corto al más largo.
+        Backtracking: avanza a un vecino, explora y deshace la elección. 'maxTramos'
+        poda los caminos demasiado largos (y limita la profundidad de la recursión)."""
+        self._vecinosDe(origen)
+        self._vecinosDe(destino)
+        if maxTramos is None:
+            maxTramos = self.cantidadVertices() - 1
+        caminos = []
+        self._backtracking(origen, destino, VectorDinamico(), ConjuntoHash(), caminos,
+                           maximo * 5, maxTramos)
+        return mergeSort(caminos, clave=len)[:maximo]
 
-        Complejidad: O(V + E)
-        """
-        visitados = []
-        resultado = []
-        self._dfs_recursivo(id_inicio, visitados, resultado)
-        return resultado
-
-    def _dfs_recursivo(self, id_vertice, visitados, resultado):
-        """DFS recursivo."""
-        if id_vertice in visitados:
+    def _backtracking(self, actual, destino, camino, enCamino, caminos, limite, maxTramos):
+        if len(caminos) >= limite or len(camino) > maxTramos:
             return
-
-        visitados.append(id_vertice)
-        resultado.append(id_vertice)
-
-        for vecino in self.obtener_vecinos(id_vertice):
-            if vecino not in visitados:
-                self._dfs_recursivo(vecino, visitados, resultado)
+        camino.agregar(actual)
+        enCamino.agregar(actual)
+        if actual == destino:
+            caminos.append(camino.recorrer())
+        else:
+            for vecino in self._vecinosDe(actual):
+                if not enCamino.contiene(vecino):
+                    self._backtracking(vecino, destino, camino, enCamino, caminos, limite, maxTramos)
+        camino.eliminarUltimo()      # deshacer la elección (backtracking)
+        enCamino.eliminar(actual)
 
     def __str__(self):
-        """Representación en string."""
-        return f"Grafo(V={self.cantidad_vertices}, E={self.cantidad_aristas})"
+        return f"Grafo(V={self.cantidadVertices()}, E={self.cantidadAristas})"
 
-    def __repr__(self):
-        """Representación para debug."""
-        return self.__str__()
+    __repr__ = __str__

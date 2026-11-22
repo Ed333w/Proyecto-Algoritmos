@@ -1,119 +1,175 @@
+"""Tabla hash con encadenamiento separado.
+
+- Función hash djb2 (h = h*33 + c) sobre la representación en texto de la clave.
+- Capacidad siempre prima y redimensionamiento al superar factor de carga 0.75.
+- Complejidad: insertar, buscar y eliminar O(1) promedio, O(n) peor caso.
+
+La suma ASCII de la Entrega 1 se conserva como función (hashSumaAscii) para poder
+comparar la calidad de las dos funciones con la misma tabla (ver pruebas).
+"""
+
+
+def _esPrimo(n):
+    if n < 2:
+        return False
+    if n % 2 == 0:
+        return n == 2
+    i = 3
+    while i * i <= n:
+        if n % i == 0:
+            return False
+        i += 2
+    return True
+
+
+def primoSiguiente(n):
+    candidato = max(2, n)
+    while not _esPrimo(candidato):
+        candidato += 1
+    return candidato
+
+
+def hashDjb2(clave):
+    h = 5381
+    for ch in str(clave):
+        h = ((h << 5) + h + ord(ch)) & 0xFFFFFFFF
+    return h
+
+
+def hashSumaAscii(clave):
+    """Función de la Entrega 1: agrupa claves parecidas (R0012 y R0021 chocan)."""
+    return sum(ord(ch) for ch in str(clave))
+
+
 class _Nodo:
-    def __init__(self, clave, valor):
+    __slots__ = ("clave", "valor", "sig")
+
+    def __init__(self, clave, valor, sig=None):
         self.clave = clave
         self.valor = valor
-        self.siguiente = None
+        self.sig = sig
 
 
 class TablaHash:
 
-    # Constructor de la tabla hash
-    def __init__(self, tamaño=100):
-        self.tamaño = tamaño
-        self.tabla = [None] * tamaño  # Arreglo de cabeceras
-        self.cantidad = 0
+    FACTOR_MAX = 0.75
 
-    # Función hash simple para cadenas y números
-    def _hash(self, clave):
-        if isinstance(clave, str):
-            # Suma ASCII de caracteres módulo tamaño
-            h = 0
-            for c in clave:
-                h += ord(c)
-            return h % self.tamaño
-        else:
-            # Para números, usar módulo directo
-            return abs(hash(clave)) % self.tamaño
+    def __init__(self, capacidad=211, funcionHash=hashDjb2, redimensionar=True):
+        self.capacidad = primoSiguiente(capacidad)
+        self.cubetas = [None] * self.capacidad
+        self.tamaño = 0
+        self._hash = funcionHash
+        self._redimensiona = redimensionar
 
-    # Inserta o actualiza un par clave-valor    
-    def insertar(self, clave, valor):
-        """
-        Inserta o actualiza un par clave-valor.
+    def _indice(self, clave):
+        return self._hash(clave) % self.capacidad
 
-        Complejidad: O(1) promedio, O(n) peor caso
-        """
-        idx = self._hash(clave)
-
-        # Buscar si ya existe en la cadena
-        nodo = self.tabla[idx]
+    def _nodo(self, clave):
+        nodo = self.cubetas[self._indice(clave)]
         while nodo is not None:
             if nodo.clave == clave:
-                nodo.valor = valor  # Actualizar
-                return
-            nodo = nodo.siguiente
-
-        # No existe, agregar al inicio de la cadena
-        nuevoNodo = _Nodo(clave, valor)
-        nuevoNodo.siguiente = self.tabla[idx]
-        self.tabla[idx] = nuevoNodo
-        self.cantidad += 1
-
-    # Busca un valor por su clave
-    def buscar(self, clave):
-        idx = self._hash(clave)
-
-        nodo = self.tabla[idx]
-        while nodo is not None:
-            if nodo.clave == clave:
-                return nodo.valor
-            nodo = nodo.siguiente
-
+                return nodo
+            nodo = nodo.sig
         return None
 
-    # Elimina un par clave-valor de la tabla
+    def insertar(self, clave, valor):
+        """Inserta o actualiza. Devuelve True si la clave era nueva."""
+        nodo = self._nodo(clave)
+        if nodo is not None:
+            nodo.valor = valor
+            return False
+        i = self._indice(clave)
+        self.cubetas[i] = _Nodo(clave, valor, self.cubetas[i])
+        self.tamaño += 1
+        if self._redimensiona and self.tamaño / self.capacidad > self.FACTOR_MAX:
+            self._redimensionar()
+        return True
+
+    def buscar(self, clave, defecto=None):
+        nodo = self._nodo(clave)
+        return nodo.valor if nodo is not None else defecto
+
+    def contiene(self, clave):
+        return self._nodo(clave) is not None
+
     def eliminar(self, clave):
-        idx = self._hash(clave)
-
-        # Caso 1: Eliminar del inicio de la cadena
-        if self.tabla[idx] is not None and self.tabla[idx].clave == clave:
-            self.tabla[idx] = self.tabla[idx].siguiente
-            self.cantidad -= 1
-            return True
-
-        # Caso 2: Buscar en el resto de la cadena
-        nodo = self.tabla[idx]
-        while nodo is not None and nodo.siguiente is not None:
-            if nodo.siguiente.clave == clave:
-                nodo.siguiente = nodo.siguiente.siguiente
-                self.cantidad -= 1
+        i = self._indice(clave)
+        previo, nodo = None, self.cubetas[i]
+        while nodo is not None:
+            if nodo.clave == clave:
+                if previo is None:
+                    self.cubetas[i] = nodo.sig
+                else:
+                    previo.sig = nodo.sig
+                self.tamaño -= 1
                 return True
-            nodo = nodo.siguiente
-
+            previo, nodo = nodo, nodo.sig
         return False
 
-    # Verifica si la tabla contiene una clave
-    def contiene(self, clave):
-        return self.buscar(clave) is not None
+    def incrementar(self, clave, cantidad=1):
+        """Suma 'cantidad' al valor numérico de la clave (0 si no existía)."""
+        nuevo = self.buscar(clave, 0) + cantidad
+        self.insertar(clave, nuevo)
+        return nuevo
 
-    # Obtiene la cantidad de elementos en la tabla
+    def _redimensionar(self):
+        viejas = self.cubetas
+        self.capacidad = primoSiguiente(self.capacidad * 2)
+        self.cubetas = [None] * self.capacidad
+        for nodo in viejas:
+            while nodo is not None:
+                sig = nodo.sig
+                i = self._indice(nodo.clave)
+                nodo.sig = self.cubetas[i]
+                self.cubetas[i] = nodo
+                nodo = sig
+
+    def items(self):
+        for nodo in self.cubetas:
+            while nodo is not None:
+                yield nodo.clave, nodo.valor
+                nodo = nodo.sig
+
+    def claves(self):
+        return [clave for clave, _ in self.items()]
+
+    def valores(self):
+        return [valor for _, valor in self.items()]
+
     def obtenerCantidad(self):
-        return self.cantidad
-
-    # Obtiene el tamaño de la tabla
-    def obtenerTamaño(self):
         return self.tamaño
 
-    # Obtiene el factor de carga de la tabla
-    def obtenerTodasLasClaves(self):
-        claves = []
-        for celda in self.tabla:
-            nodo = celda
-            while nodo is not None:
-                claves.append(nodo.clave)
-                nodo = nodo.siguiente
-        return claves
-
-    # Obtiene el factor de carga de la tabla
     def obtenerFactorCarga(self):
-        return self.cantidad / self.tamaño if self.tamaño > 0 else 0
+        return self.tamaño / self.capacidad
 
-    # Obtiene el factor de carga de la tabla
-    def limpiar(self):
-        self.tabla = [None] * self.tamaño
-        self.cantidad = 0
+    def estadisticas(self):
+        """Datos de colisiones para el informe de eficiencia."""
+        ocupadas = maxima = comparaciones = 0
+        for nodo in self.cubetas:
+            largo = 0
+            while nodo is not None:
+                largo += 1
+                comparaciones += largo  # buscar el k-ésimo de la cadena cuesta k
+                nodo = nodo.sig
+            if largo:
+                ocupadas += 1
+                maxima = max(maxima, largo)
+        return {
+            "capacidad": self.capacidad,
+            "elementos": self.tamaño,
+            "factorCarga": round(self.obtenerFactorCarga(), 3),
+            "cubetasOcupadas": ocupadas,
+            "cadenaMaxima": maxima,
+            "comparacionesPromedio": round(comparaciones / self.tamaño, 3) if self.tamaño else 0,
+        }
+
+    def __len__(self):
+        return self.tamaño
+
+    def __contains__(self, clave):
+        return self.contiene(clave)
 
     def __str__(self):
-        return f"TablaHash(cantidad={self.cantidad}, tamaño={self.tamaño}, factor_carga={self.obtenerFactorCarga():.2f})"
+        return f"TablaHash(elementos={self.tamaño}, capacidad={self.capacidad})"
 
-    def __repr__(self):
-        return self.__str__()
+    __repr__ = __str__

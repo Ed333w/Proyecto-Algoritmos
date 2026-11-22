@@ -2,6 +2,7 @@
 
 from modulos.M03_Prestamos import SinUnidadesError
 from modulos.comun import fechaATexto
+from modulos.M07_Inventario import validarOperativo
 from .consola import leer, confirmar, tabla, ejecutarMenu
 
 
@@ -22,6 +23,7 @@ def informarAsignados(sistema, asignados):
 def registrar(sesion):
     sistema = sesion.sistema
     usuario, recurso, sede = leer("Código del usuario: "), leer("Código del recurso: "), leer("Sede: ")
+    validarOperativo(sistema.recursos, recurso)     # mensaje con la condición real (dañado, sin uso...)
     try:
         codigo = sistema.prestamos.registrarPrestamo(usuario, recurso, sede)
     except SinUnidadesError as error:

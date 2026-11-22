@@ -1,120 +1,70 @@
+"""Lista doblemente enlazada: cada nodo conoce al siguiente y al anterior, así se
+recorre hacia adelante y hacia atrás sin invertir nada.
+
+Complejidad: insertar y eliminar en los extremos O(1), recorrer O(n).
+"""
+
+from .ListaEnlazada import ListaEnlazada
+
+
 class NodoDoble:
+    __slots__ = ("dato", "siguiente", "anterior")
 
     def __init__(self, dato):
         self.dato = dato
         self.siguiente = None
         self.anterior = None
 
-    def __str__(self):
-        return f"NodoDoble({self.dato})"
 
+class ListaDoble(ListaEnlazada):
 
-class ListaDoble:
-
-    def __init__(self):
-        """Inicializa lista vacía."""
-        self.cabeza = None
-        self.cola = None
-        self.tamaño = 0
-
-    # Agrega un elemento al inicio de la lista
     def agregarAlInicio(self, dato):
-        nuevoNodo = NodoDoble(dato)
-
+        nodo = NodoDoble(dato)
+        nodo.siguiente = self.cabeza
         if self.cabeza is None:
-            self.cabeza = self.cola = nuevoNodo
+            self.cola = nodo
         else:
-            nuevoNodo.siguiente = self.cabeza
-            self.cabeza.anterior = nuevoNodo
-            self.cabeza = nuevoNodo
-
+            self.cabeza.anterior = nodo
+        self.cabeza = nodo
         self.tamaño += 1
 
-    #   Agrega un elemento al final de la lista
     def agregarAlFinal(self, dato):
-        nuevoNodo = NodoDoble(dato)
-
+        nodo = NodoDoble(dato)
+        nodo.anterior = self.cola
         if self.cola is None:
-            self.cabeza = self.cola = nuevoNodo         
+            self.cabeza = nodo
         else:
-            nuevoNodo.anterior = self.cola
-            self.cola.siguiente = nuevoNodo
-            self.cola = nuevoNodo
-
+            self.cola.siguiente = nodo
+        self.cola = nodo
         self.tamaño += 1
 
-    # Elimina el primer nodo de la lista y devuelve su dato
+    def _desenlazar(self, nodo):
+        if nodo.anterior is None:
+            self.cabeza = nodo.siguiente
+        else:
+            nodo.anterior.siguiente = nodo.siguiente
+        if nodo.siguiente is None:
+            self.cola = nodo.anterior
+        else:
+            nodo.siguiente.anterior = nodo.anterior
+        self.tamaño -= 1
+        return nodo.dato
+
     def eliminarInicio(self):
-        if self.cabeza is None:
-            return None
+        return self._desenlazar(self.cabeza) if self.cabeza is not None else None
 
-        dato = self.cabeza.dato
-
-        if self.cabeza == self.cola:
-            self.cabeza = self.cola = None
-        else:
-            self.cabeza = self.cabeza.siguiente
-            self.cabeza.anterior = None
-
-        self.tamaño -= 1
-        return dato
-
-    # Elimina el último nodo de la lista y devuelve su dato
     def eliminarFinal(self):
-        if self.cola is None:
-            return None
+        return self._desenlazar(self.cola) if self.cola is not None else None
 
-        dato = self.cola.dato
+    def recorrerAdelante(self, criterioFn=None):
+        return self.recorrer(criterioFn)
 
-        if self.cabeza == self.cola:
-            self.cabeza = self.cola = None
-        else:
-            self.cola = self.cola.anterior
-            self.cola.siguiente = None
-
-        self.tamaño -= 1
-        return dato
-
-    # Busca un elemento en la lista y devuelve su dato
-    def buscar(self, criterioFn):
-        actual = self.cabeza
-        while actual is not None:
-            if criterioFn(actual.dato):
-                return actual.dato
-            actual = actual.siguiente
-        return None
-
-    # Recorre todos los elementos de la lista hacia adelante y devuelve una lista con ellos
-    def recorrerAdelante(self):
-        resultado = []
-        actual = self.cabeza
-        while actual is not None:
-            resultado.append(actual.dato)
-            actual = actual.siguiente
-        return resultado
-
-    #  Recorre todos los elementos de la lista hacia atrás y devuelve una lista con ellos
-    def recorrerAtras(self):
+    def recorrerAtras(self, criterioFn=None):
+        """Del último al primero usando el enlace 'anterior'."""
         resultado = []
         actual = self.cola
         while actual is not None:
-            resultado.append(actual.dato)
+            if criterioFn is None or criterioFn(actual.dato):
+                resultado.append(actual.dato)
             actual = actual.anterior
         return resultado
-
-    def obtenerTamaño(self):
-        return self.tamaño
-
-    def estaVacia(self):
-        return self.tamaño == 0
-
-    def limpiar(self):
-        self.cabeza = None
-        self.cola = None
-        self.tamaño = 0
-
-    def __str__(self):
-        return f"ListaDoble({self.recorrerAdelante()})"
-
-    def __repr__(self):
-        return self.__str__()

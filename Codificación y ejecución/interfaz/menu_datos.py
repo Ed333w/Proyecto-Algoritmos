@@ -6,7 +6,7 @@ from persistencia import guardar, cargar
 from persistencia.datos_demo import crearSistemaDemo
 from .consola import confirmar, ejecutarMenu
 
-CARPETA_PRUEBA = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "datos_prueba")
+CARPETA_PRUEBA = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "datos de prueba")
 
 
 def guardarAhora(sesion):
@@ -27,7 +27,7 @@ def recargar(sesion):
 
 
 def cargarPrueba(sesion):
-    _reemplazar(sesion, cargar(CARPETA_PRUEBA), "datos_prueba (más de 500 registros)")
+    _reemplazar(sesion, cargar(CARPETA_PRUEBA), "datos de prueba (más de 500 registros)")
 
 
 def restaurarDemo(sesion):
