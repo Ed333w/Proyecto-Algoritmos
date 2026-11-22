@@ -1,20 +1,69 @@
-from estructuras import VectorDinamico, TablaHash
+from estructuras import VectorDinamico, TablaHash, ConjuntoHash
+from modulos.comun import GeneradorCodigos, validarTexto, validarEmail
 from .usuario import Usuario
 
 class GestorUsuarios:
     def __init__(self):
-        self.usuarios = VectorDinamico(capacidadInicial=10)
-        self.contadorCodigos = 0
-        self.codigosUsados = set()
-        self.indice = TablaHash(211)  # código -> Usuario, búsqueda O(1) promedio
+        self.usuarios = VectorDinamico()
+        self.indice = TablaHash()
+        self.indiceEmail = TablaHash()
+        self.indiceDocumento = TablaHash()
+        self.activos = ConjuntoHash()
+        self.codigos = GeneradorCodigos("U", 3)
 
-    def registrar(self, nombre, email):
-        #validar entrada
-        if not nombre or (isinstance(nombre, str) and not nombre.strip()):
-            raise ValueError("El nombre del usuario no puede estar vacío")
-        if not email or (isinstance(email, str) and not email.strip()):
-            raise ValueError("El email del usuario no puede estar vacío")
+    #---- altas ----
+    def _validarEmailLibre(self, email, codigoPropio=None):
+        dueño = self.indiceEmail.buscar(email)
+        if dueño is not None and dueño != codigoPropio:
+            raise ValueError(f"El correo {email} ya está registrado por {dueño}")
 
+    @staticmethod
+    def validarDocumento(tipo, numero):         #devuelve (sigla, número) normalizados. CC, TI y CE solo llevan dígitos (5 a 12); el pasaporte admite letras y dígitos (5 a 12).
+        sigla = validarTexto(tipo, "El tipo de documento").upper()
+        if not any(sigla == s for s, _ in Usuario.TIPOS_DOCUMENTO):
+            opciones = ", ".join(f"{s} ({n})" for s, n in Usuario.TIPOS_DOCUMENTO)
+            raise ValueError(f"Tipo de documento '{tipo}' no válido. Opciones: {opciones}") 
+        numero = validarTexto(str(numero), "El número de documento").replace(".", "").replace(" ", "").upper()
+        valido = numero.isalnum() if sigla == "PA" else numero.isdigit()
+        if not valido or not 5 <= len(numero) <= 12:
+            detalle = "letras y números" if sigla == "PA" else "solo números"
+            raise ValueError(f"El número de documento debe tener entre 5 y 12 caracteres ({detalle})")
+        return sigla, numero
+
+    @staticmethod
+    def _claveDocumento(sigla, numero):
+        return f"{sigla}|{numero}"
+
+    def _indexar(self, usuario):
+        clave = self._claveDocumento(usuario.tipoDocumento, usuario.numeroDocumento)
+        if self.indiceDocumento.contiene(clave):
+            raise ValueError(f"Ya hay un usuario con el documento {usuario.documento()}: {self.indiceDocumento.buscar(clave).codigo}")
+        self.indiceDocumento.insertar(clave, usuario)
+        self.usuarios.agregar(usuario)
+        self.indice.insertar(usuario.codigo, usuario)
+        self.indiceEmail.insertar(usuario.email, usuario.codigo)
+        if usuario.esActivo():
+            self.activos.agregar(usuario.codigo)
+
+    def registrar(self, nombre, email, tipoDocumento, numeroDocumento):
+        """RQF-001: alta con código automático. Rechaza datos vacíos, correos repetidos
+        y documentos ya registrados."""
+        nombre = validarTexto(nombre, "El nombre")
+        sigla, numero = self.validarDocumento(tipoDocumento, numeroDocumento)
+        email = validarEmail(email)
+        self._validarEmailLibre(email)
+        usuario = Usuario(self.codigos.formatear(self.codigos.contador + 1), nombre, email, sigla, numero)
+        self._indexar(usuario)          # rechaza el documento repetido antes de guardar nada
+        self.codigos.siguiente()
+        return usuario.codigo
+
+    def cargarExistente(self, usuario):
+        """Persistencia: agrega un usuario ya creado conservando su código."""
+        if self.indice.contiene(usuario.codigo):
+            raise ValueError(f"El usuario {usuario.codigo} está repetido en los datos")
+        self.codigos.registrarExistente(usuario.codigo)
+        self._indexar(usuario)
+        
         #generar un código único para el usuario
         self.contadorCodigos += 1
         codigo = f"U{self.contadorCodigos:03d}"  # Formato: U001, U002, etc.
@@ -94,4 +143,4 @@ class GestorUsuarios:
         total = self.obtenerCantidad()
         return f"GestorUsuarios(total={total}, activos={activos})"
            
-    
+    
