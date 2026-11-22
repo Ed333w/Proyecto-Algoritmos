@@ -1,0 +1,7 @@
+codigo;nombre
+S01;Centro
+S02;Norte
+S03;Sur
+S04;Occidente
+S05;Oriente
+S06;Chapinero

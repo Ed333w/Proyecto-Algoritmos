@@ -1,0 +1,6 @@
+sedeA;sedeB
+Centro;Norte
+Centro;Sur
+Norte;Sur
+Sur;Occidente
+Occidente;Oriente
