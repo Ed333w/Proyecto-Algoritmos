@@ -87,7 +87,7 @@ jobs:
         working-directory: ${{ env.CODIGO }}
         run: |
           export DATOS_PROYECTO="$RUNNER_TEMP/datos"
-          cp -r "datos de prueba" "$DATOS_PROYECTO"
+          cp -r datos_prueba "$DATOS_PROYECTO"
           printf '\n1\n6\n\n0\n6\n1\n\n0\n8\n4\n\n0\n0\n' | python main.py | tee salida.txt
           grep -q "Datos cargados" salida.txt
           grep -q "Se guardaron" salida.txt
@@ -114,8 +114,8 @@ jobs:
         run: |
           cd "$CODIGO"
           zip -r "../proyecto-algoritmos-${GITHUB_REF_NAME}.zip" \
-            main.py medicion_eficiencia.py estructuras modulos persistencia interfaz tests "datos de prueba" \
-            pytest.ini setup.cfg "Como ejcutar.md" PRUEBAS.md \
+            main.py medicion_eficiencia.py estructuras modulos persistencia interfaz tests datos_prueba \
+            pytest.ini setup.cfg COMO_EJECUTAR.md PRUEBAS.md \
             -x "*__pycache__*" "*.DS_Store" "tests/reporte/*"
       - name: Publicar Release en GitHub
         uses: softprops/action-gh-release@v2
