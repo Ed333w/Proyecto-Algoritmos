@@ -1,245 +1,208 @@
-from estructuras import VectorDinamico, ListaSimple, ListaDoble, Pila, TablaHash
-from .Prestamo import Prestamo
+"""M03 · Préstamos, devoluciones e historial (RQF-011 a 015 y 036 a 039).
 
+Estructuras:
+- ListaDoble historial: todos los préstamos en orden; se recorre en ambos sentidos
+  y se filtra por usuario (RQF-013) o por recurso (RQF-014).
+- ListaSimple activos: préstamos sin devolver (RQF-036); altas y bajas frecuentes.
+- TablaHash código -> Prestamo: consulta por código en O(1) promedio (RQF-038).
+- Pila: deshacer el último préstamo o devolución (RQF-015).
+"""
 
-def _num(codigo):
-    return int(str(codigo)[1:])
+from estructuras import ListaDoble, ListaSimple, TablaHash, Pila
+from modulos.comun import GeneradorCodigos, validarEntero, ahoraSiFalta
+from .Prestamo import Prestamo, DIAS_LIMITE
+
 
 class SinUnidadesError(ValueError):
-    pass
+    """No hay unidades en la sede: el menú ofrece pedir turno (RQF-011 -> RQF-016)."""
+
+
+_PRESTAMO, _DEVOLUCION = "el préstamo", "la devolución"
 
 
 class GestorPrestamos:
- 
-    def __init__(self, gestorTurnos=None, gestorUsuarios=None, gestorRecursos=None,
-                 sistemaInteligente=None):
-        self.prestamos = VectorDinamico(capacidadInicial=50)
-        self.historialSimple = ListaSimple()
-        self.historialDoble = ListaDoble()
+
+    def __init__(self, gestorUsuarios, gestorRecursos, gestorInventario, gestorTurnos):
+        self.usuarios = gestorUsuarios
+        self.recursos = gestorRecursos
+        self.inventario = gestorInventario
+        self.turnos = gestorTurnos
+        self.historial = ListaDoble()
+        self.activos = ListaSimple()
+        self.indice = TablaHash()
         self.pilaDeshacer = Pila()
-        self.contadorCodigos = 0
-        self.gestorTurnos = gestorTurnos
-        self.gestorUsuarios = gestorUsuarios
-        self.gestorRecursos = gestorRecursos
-        self.indiceCodigo = TablaHash(211)
-        self.recursosActivos = TablaHash(211)
-        self.sistemaInteligente = sistemaInteligente
- 
-    def _indexarActivo(self, p):
-        n = self.recursosActivos.buscar(p.codigoRecurso)
-        if n is None:
-            n = 0
-        self.recursosActivos.insertar(p.codigoRecurso, n + 1)
- 
-    def _desindexarActivo(self, p):
-        n = self.recursosActivos.buscar(p.codigoRecurso)
-        if n is None:
-            n = 0
-        if n <= 1:
-            self.recursosActivos.eliminar(p.codigoRecurso)
-        else:
-            self.recursosActivos.insertar(p.codigoRecurso, n - 1)
- 
-    def recursoPrestado(self, codigoRecurso):
-        return self.recursosActivos.buscar(codigoRecurso) is not None
- 
+        self.codigos = GeneradorCodigos("P", 4)
+
+    def _indexar(self, prestamo):
+        self.historial.agregarAlFinal(prestamo)
+        self.indice.insertar(prestamo.codigo, prestamo)
+        if prestamo.estaActivo():
+            self.activos.agregarAlFinal(prestamo)
+
+    def _quitarDeActivos(self, prestamo):
+        self.activos.eliminar(lambda p: p is prestamo)
+
+    # ---- RQF-011 ----
     def registrarPrestamo(self, codigoUsuario, codigoRecurso, sede,
-                           fechaPrestamo=None, diasLimite=14, _solicitud=None):
-        if self.gestorUsuarios:
-            usuario = self.gestorUsuarios.buscarxCodigo(codigoUsuario)
-            if usuario is None:
-                raise ValueError(f"Usuario {codigoUsuario} no existe")
-            if not usuario.esActivo():
-                raise ValueError(f"El usuario {codigoUsuario} esta inactivo")
- 
-        if self.gestorRecursos:
-            recurso = self.gestorRecursos.buscarxCodigo(codigoRecurso)
-            if recurso is None:
-                raise ValueError(f"Recurso {codigoRecurso} no existe")
-            if recurso.obtenerEstado() == "Dado de baja":
-                raise ValueError(f"El recurso {codigoRecurso} esta dado de baja")
- 
-            sedes = self.gestorRecursos.listarSedes()
-            sedeExiste = any(s.nombre == sede for s in sedes)
-            if not sedeExiste:
-                raise ValueError(f"Sede '{sede}' no existe")
- 
-            if not self.gestorRecursos.decrementarDisponibilidad(codigoRecurso, sede):
-                raise SinUnidadesError(f"Sin unidades disponibles de {codigoRecurso} en {sede}")
-            
-        self.contadorCodigos += 1
-        codigo = f"P{self.contadorCodigos:04d}"
-        prestamo = Prestamo(codigo, codigoUsuario, codigoRecurso, sede,
-                            fechaPrestamo, diasLimite)
- 
-        self.prestamos.agregar(prestamo)
-        self.historialSimple.agregarAlFinal(prestamo)
-        self.historialDoble.agregarAlFinal(prestamo)
-        self.indiceCodigo.insertar(codigo, prestamo)
-        self._indexarActivo(prestamo)
- 
-        if self.gestorUsuarios:
-            usuario = self.gestorUsuarios.buscarxCodigo(codigoUsuario)
-            if usuario:
-                usuario.registrarPrestamo(codigo)
+                          fechaPrestamo=None, diasLimite=DIAS_LIMITE, _solicitud=None):
+        usuario = self.usuarios.validarActivo(codigoUsuario)
+        recurso = self.recursos.validarVigente(codigoRecurso)
+        sede = self.recursos.validarSede(sede)
+        diasLimite = validarEntero(diasLimite, "El plazo en días", minimo=1, maximo=365)
+        if not self.inventario.decrementar(recurso.codigo, sede):
+            raise SinUnidadesError(f"No hay unidades de {recurso.codigo} en {sede}")
+        prestamo = Prestamo(self.codigos.siguiente(), usuario.codigo, recurso.codigo,
+                            sede, fechaPrestamo, diasLimite)
+        self._indexar(prestamo)
+        usuario.sumarPrestamo()
+        recurso.registrarPrestamo()
+        self.pilaDeshacer.push((_PRESTAMO, prestamo, _solicitud))
+        return prestamo.codigo
 
-        # C7: ahora sí se cuenta el préstamo en el recurso (lo usa el informe de más prestados)
-        if self.gestorRecursos:
-            recurso = self.gestorRecursos.buscarxCodigo(codigoRecurso)
-            if recurso:
-                recurso.registrarPrestamo()
+    # ---- RQF-012 y RQF-017 ----
+    def registrarDevolucion(self, codigoPrestamo, fechaDevolucion=None):
+        """Cierra el préstamo, devuelve la unidad a su sede y la asigna al siguiente
+        de la fila de esa sede. Devuelve los códigos de los préstamos asignados."""
+        prestamo = self.obtener(codigoPrestamo)
+        if not prestamo.estaActivo():
+            raise ValueError(f"El préstamo {prestamo.codigo} ya fue devuelto")
+        fecha = ahoraSiFalta(fechaDevolucion)
+        if fecha < prestamo.fechaPrestamo:
+            raise ValueError("La fecha de devolución no puede ser anterior al préstamo")
+        prestamo.devolver(fecha)
+        self._quitarDeActivos(prestamo)
+        self.inventario.incrementar(prestamo.codigoRecurso, prestamo.sede)
+        self.usuarios.obtener(prestamo.codigoUsuario).restarPrestamo()
+        self.recursos.obtener(prestamo.codigoRecurso).cerrarPrestamo()
+        self.pilaDeshacer.push((_DEVOLUCION, prestamo, None))
+        return self.atenderFila(prestamo.codigoRecurso, prestamo.sede)
 
-        if self.sistemaInteligente is not None:
-            self.sistemaInteligente.registrarPrestamoHist(codigoUsuario, codigoRecurso)
-            self.sistemaInteligente.registrarPrestamoGami(codigoUsuario)
- 
-        self.pilaDeshacer.push({
-            'operacion': 'registrarPrestamo',
-            'prestamo': prestamo,
-            'solicitud': _solicitud,
-        })
-        return codigo
-
-    def registrarDevolucion(self, codigoPrestamo):
-        p = self.indiceCodigo.buscar(codigoPrestamo)
-        if p is None or p.estado != "Activo":
-            return False
-        p.devolver()
-        self._desindexarActivo(p)
- 
-        if self.gestorRecursos:
-            self.gestorRecursos.incrementarDisponibilidad(p.codigoRecurso, p.sede)
- 
-        if self.gestorUsuarios:
-            usuario = self.gestorUsuarios.buscarxCodigo(p.codigoUsuario)
-            if usuario:
-                usuario.devolverPrestamo(codigoPrestamo)
- 
-        self.pilaDeshacer.push({'operacion': 'registrarDevolucion', 'prestamo': p})
-
-        if self.sistemaInteligente is not None:
-            self.sistemaInteligente.registrarPrestamoFinalizado(
-                p.codigoRecurso, p.fechaPrestamo, p.fechaDevolucion)
-            diasUsado = (p.fechaDevolucion - p.fechaPrestamo).days
-            if diasUsado <= p.diasLimite:
-                self.sistemaInteligente.registrarDevolucionTiempo(p.codigoUsuario)
- 
-        if self.gestorTurnos and self.gestorTurnos.obtenerCantidadEspera(p.codigoRecurso) > 0:
+    def atenderFila(self, codigoRecurso, sede):
+        """Mientras haya unidades y gente en la fila, presta en orden de llegada.
+        Si quien sigue ya no puede recibir el préstamo (p. ej. quedó inactivo), se cancela."""
+        asignados = []
+        while self.inventario.obtenerDisponibilidad(codigoRecurso, sede) > 0:
+            solicitud = self.turnos.obtenerSiguiente(codigoRecurso, sede)
+            if solicitud is None:
+                break
             try:
-                asignado = self.atenderSiguienteTurno(p.codigoRecurso, p.sede)
+                asignados.append(self.registrarPrestamo(solicitud.codigoUsuario, codigoRecurso,
+                                                        sede, _solicitud=solicitud))
             except ValueError:
-                asignado = None
-            if asignado:
-                return asignado
-        return True
+                solicitud.cancelar()
+        return asignados
 
+    # ---- RQF-015 ----
     def deshacer(self):
-        op = self.pilaDeshacer.pop()
-        if op is None:
-            return False
- 
-        p = op['prestamo']
-        if op['operacion'] == 'registrarPrestamo':
-            if p.estado == "Activo":
-                self._desindexarActivo(p)
-                if self.gestorRecursos:
-                    self.gestorRecursos.incrementarDisponibilidad(p.codigoRecurso, p.sede)
-            self.indiceCodigo.eliminar(p.codigo)
-            if self.gestorRecursos:
-                recurso = self.gestorRecursos.buscarxCodigo(p.codigoRecurso)
-                if recurso and recurso.cantidadPrestamos > 0:
-                    recurso.cantidadPrestamos -= 1
-            if self.sistemaInteligente is not None:
-                self.sistemaInteligente.quitarPrestamoHist(p.codigoUsuario, p.codigoRecurso)
- 
-            if self.gestorUsuarios:
-                usuario = self.gestorUsuarios.buscarxCodigo(p.codigoUsuario)
-                if usuario:
-                    usuario.devolverPrestamo(p.codigo)
- 
-            restantes = [x for x in self.prestamos.recorrer() if x is not p]
-            self.prestamos = VectorDinamico(capacidadInicial=50)
-            self.historialSimple = ListaSimple()
-            self.historialDoble = ListaDoble()
-            for x in restantes:
-                self.prestamos.agregar(x)
-                self.historialSimple.agregarAlFinal(x)
-                self.historialDoble.agregarAlFinal(x)
-            if _num(p.codigo) == self.contadorCodigos:
-                self.contadorCodigos -= 1
- 
-            solicitud = op.get('solicitud')
-            if solicitud is not None and self.gestorTurnos:
-                self.gestorTurnos.reinsertarAlFrente(solicitud)
-        elif op['operacion'] == 'registrarDevolucion':
-            if self.gestorRecursos and not self.gestorRecursos.decrementarDisponibilidad(p.codigoRecurso, p.sede):
-                self.pilaDeshacer.push(op)
-                raise ValueError(f"No se puede deshacer la devolucion de {p.codigo}: "
-                                 f"no quedan unidades de {p.codigoRecurso} en {p.sede}")
-            p.reactivar()
-            self._indexarActivo(p)
- 
-            if self.gestorUsuarios:
-                usuario = self.gestorUsuarios.buscarxCodigo(p.codigoUsuario)
-                if usuario:
-                    usuario.registrarPrestamo(p.codigo)
-        return True
+        """Revierte la última operación. Devuelve una descripción o None si no hay nada."""
+        operacion = self.pilaDeshacer.pop()
+        if operacion is None:
+            return None
+        tipo, prestamo, solicitud = operacion
+        try:
+            if tipo == _PRESTAMO:
+                self._deshacerPrestamo(prestamo, solicitud)
+            else:
+                self._deshacerDevolucion(prestamo)
+        except ValueError:
+            self.pilaDeshacer.push(operacion)
+            raise
+        return f"Se deshizo {tipo} {prestamo.codigo}"
 
-    def atenderSiguienteTurno(self, codigoRecurso, sede):
-        if self.gestorTurnos is None:
-            raise ValueError("GestorPrestamos no tiene GestorTurnos asociado")
-        while True:
-            sol = self.gestorTurnos.obtenerSiguiente(codigoRecurso)
-            if sol is None:
-                return None
-            if self.gestorUsuarios:
-                usuario = self.gestorUsuarios.buscarxCodigo(sol.codigoUsuario)
-                if usuario is None or not usuario.esActivo():
-                    sol.cancelar()
-                    continue
-            try:
-                return self.registrarPrestamo(sol.codigoUsuario, codigoRecurso, sede,
-                                               _solicitud=sol)
-            except ValueError:
-                self.gestorTurnos.reinsertarAlFrente(sol)
-                raise
+    def _deshacerPrestamo(self, prestamo, solicitud):
+        # Por ser LIFO, el préstamo a deshacer es el último del historial
+        if self.historial.ultimo() is not prestamo:
+            raise ValueError(f"El préstamo {prestamo.codigo} ya no es la última operación")
+        self.historial.eliminarFinal()
+        self._quitarDeActivos(prestamo)
+        self.indice.eliminar(prestamo.codigo)
+        self.inventario.incrementar(prestamo.codigoRecurso, prestamo.sede)
+        self.usuarios.obtener(prestamo.codigoUsuario).restarPrestamo()
+        self.recursos.obtener(prestamo.codigoRecurso).anularPrestamo()
+        self.codigos.retroceder(prestamo.codigo)
+        if solicitud is not None:
+            self.turnos.reinsertarAlFrente(solicitud)
+
+    def _deshacerDevolucion(self, prestamo):
+        usuario = self.usuarios.validarActivo(prestamo.codigoUsuario)
+        recurso = self.recursos.validarVigente(prestamo.codigoRecurso)
+        if not self.inventario.decrementar(prestamo.codigoRecurso, prestamo.sede):
+            raise ValueError(f"No se puede deshacer la devolución de {prestamo.codigo}: la unidad "
+                             f"ya se prestó de nuevo (deshaga primero ese préstamo)")
+        prestamo.reactivar()
+        self.activos.agregarAlFinal(prestamo)
+        usuario.sumarPrestamo()
+        recurso.reabrirPrestamo()
+
+    def reiniciarDeshacer(self):
+        """Los datos cargados al iniciar no se pueden deshacer."""
+        self.pilaDeshacer.limpiar()
+
+    def cargarExistente(self, prestamo):
+        """Persistencia: agrega un préstamo guardado sin tocar el inventario (ya viene guardado)."""
+        if self.indice.contiene(prestamo.codigo):
+            raise ValueError(f"El préstamo {prestamo.codigo} está repetido en los datos")
+        usuario = self.usuarios.obtener(prestamo.codigoUsuario)
+        recurso = self.recursos.obtener(prestamo.codigoRecurso)
+        self.codigos.registrarExistente(prestamo.codigo)
+        self._indexar(prestamo)
+        recurso.registrarPrestamo()
+        if prestamo.estaActivo():
+            usuario.sumarPrestamo()
+        else:
+            recurso.cerrarPrestamo()
+
+    # ---- consultas ----
+    def buscarPrestamo(self, codigo):
+        """RQF-038: O(1) promedio."""
+        return self.indice.buscar(str(codigo).strip().upper())
+
+    def obtener(self, codigo):
+        prestamo = self.buscarPrestamo(codigo)
+        if prestamo is None:
+            raise ValueError(f"El préstamo {codigo} no existe")
+        return prestamo
 
     def listarActivos(self):
-        activos = VectorDinamico(capacidadInicial=10)
-        for i in range(self.prestamos.obtenerTamaño()):
-            p = self.prestamos.obtener(i)
-            if p.estado == "Activo":
-                activos.agregar(p)
-        return activos
- 
-    def buscarPrestamo(self, codigo):
-        return self.indiceCodigo.buscar(codigo)
- 
-    def obtenerPrestamosUsuario(self, codigoUsuario):
-        return [p for p in self.prestamos.recorrer()
-                if p.codigoUsuario == codigoUsuario and p.estado == "Activo"]
- 
-    def obtenerPrestamosAtrasados(self, ahora=None):
-        return [p for p in self.prestamos.recorrer() if p.estaAtrasado(ahora)]
- 
-    def obtenerPrestamosSede(self, sede):
-        return [p for p in self.prestamos.recorrer() if p.sede == sede and p.estado == "Activo"]
- 
-    def listarTodos(self):
-        return self.prestamos.recorrer()
+        """RQF-036."""
+        return self.activos.recorrer()
 
-    def historialAdelante(self):
-        # Lista doble: del préstamo más antiguo al más reciente
-        return self.historialDoble.recorrerAdelante()
+    def listarAtrasados(self, ahora=None):
+        """RQF-037."""
+        return self.activos.recorrer(lambda p: p.estaAtrasado(ahora))
 
-    def historialAtras(self):
-        # Lista doble: del más reciente al más antiguo (sin invertir nada, usa 'anterior')
-        return self.historialDoble.recorrerAtras()
- 
+    def activosDeUsuario(self, codigoUsuario):
+        codigo = self.usuarios.obtener(codigoUsuario).codigo
+        return self.activos.recorrer(lambda p: p.codigoUsuario == codigo)
+
+    def activosDeSede(self, sede):
+        """RQF-039."""
+        sede = self.recursos.validarSede(sede)
+        return self.activos.recorrer(lambda p: p.sede == sede)
+
+    def historialUsuario(self, codigoUsuario, haciaAtras=False):
+        """RQF-013: recorre la lista doble en el sentido pedido filtrando por usuario."""
+        codigo = self.usuarios.obtener(codigoUsuario).codigo
+        return self._historial(lambda p: p.codigoUsuario == codigo, haciaAtras)
+
+    def historialRecurso(self, codigoRecurso, haciaAtras=False):
+        """RQF-014."""
+        codigo = self.recursos.obtener(codigoRecurso).codigo
+        return self._historial(lambda p: p.codigoRecurso == codigo, haciaAtras)
+
+    def _historial(self, criterio=None, haciaAtras=False):
+        if haciaAtras:
+            return self.historial.recorrerAtras(criterio)
+        return self.historial.recorrerAdelante(criterio)
+
+    def listarTodos(self, haciaAtras=False):
+        return self._historial(None, haciaAtras)
+
     def obtenerCantidad(self):
-        return self.prestamos.obtenerTamaño()
- 
+        return len(self.historial)
+
+    def obtenerCantidadActivos(self):
+        return len(self.activos)
+
     def __str__(self):
-        activos = len([p for p in self.prestamos.recorrer() if p.estado == "Activo"])
-        return f"GestorPrestamos(total={self.obtenerCantidad()}, activos={activos})"
- 
+        return f"GestorPrestamos(total={self.obtenerCantidad()}, activos={self.obtenerCantidadActivos()})"
