@@ -7,7 +7,7 @@ Al salir guarda todo en archivos de texto.
 
 Variables de entorno opcionales:
 - DATOS_PROYECTO: otra carpeta de datos (las pruebas usan una temporal).
-- SIN_LIMPIAR=1: no borra la pantalla entre menús.
+- SIN_LIMPIAR=1: no borra la pantalla entre menú    s.
 """
 
 import os
