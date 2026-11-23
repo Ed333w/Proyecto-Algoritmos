@@ -1,8 +1,0 @@
-__pycache__/
-*.pyc
-.pytest_cache/
-*.tmp
-# Datos que el programa guarda al salir (cada integrante tiene los suyos)
-/Codificación y ejecución/datos/
-# Reporte que generan las pruebas (en GitHub Actions se publica como artefacto)
-/Codificación y ejecución/tests/reporte/
