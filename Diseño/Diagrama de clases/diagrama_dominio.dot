@@ -1,0 +1,93 @@
+digraph G {
+graph [rankdir=TB, splines=ortho, nodesep=0.45, ranksep=0.7, fontname="DejaVu Sans", fontsize=22, labelloc=t,
+       label="Diagrama de clases · Entrega 3 (dominio, versión final)", pad=0.3, bgcolor=white];
+node [shape=plaintext, fontname="DejaVu Sans", fontsize=10];
+edge [fontname="DejaVu Sans", fontsize=9];
+interfaz [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#E3F2E1"><B>interfaz (menús de consola)</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">main.py, menu_principal + un menú por módulo</TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+elegirUsuario(): lista + búsqueda por nombre o documento<BR/>+elegirRecurso(): lista + búsqueda por tipo y nombre</TD></TR></TABLE>>];
+persistencia [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#E3F2E1"><B>persistencia</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">9 archivos .txt (incluye condiciones.txt)</TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+guardar(sistema, carpeta)<BR/>+cargar(carpeta) → Sistema<BR/>+crearCategoriasBase(sistema)</TD></TR></TABLE>>];
+sistema [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#DDE7F7"><B>Sistema</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">crea y conecta M01–M09</TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+fijarUnidades()<BR/>+cambiarCondicionRecurso()<BR/>+darDeBajaRecurso()<BR/>+resumen()</TD></TR></TABLE>>];
+usuarios [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFF5D6"><B>GestorUsuarios (M01)</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">usuarios: VectorDinamico<BR/>indice, indiceEmail, indiceDocumento: TablaHash<BR/>activos: ConjuntoHash</TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+registrar() +obtener() +obtenerPorDocumento()<BR/>+listarTodos() +actualizarEmail()<BR/>+darDeBaja() +reactivar()</TD></TR></TABLE>>];
+recursos [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFF5D6"><B>GestorRecursos (M02)</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">recursos: VectorDinamico<BR/>indice: TablaHash<BR/>catalogo: ArbolBinarioBusqueda<BR/>sedes: VectorDinamico + TablaHash</TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+registrar() +obtener() +buscarPorTipoYNombre()<BR/>+actualizar() +catalogoOrdenado()<BR/>+listarPorCategoria() +listarPorEstado()<BR/>+registrarSede() +listarSedes()</TD></TR></TABLE>>];
+prestamos [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFF5D6"><B>GestorPrestamos (M03)</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">historial: ListaDoble<BR/>activos: ListaSimple<BR/>indice: TablaHash<BR/>pilaDeshacer: Pila</TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+registrarPrestamo() +registrarDevolucion()<BR/>+atenderFila() +deshacer()<BR/>+historialUsuario() +historialRecurso()</TD></TR></TABLE>>];
+turnos [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFF5D6"><B>GestorTurnos (M04)</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">colas: TablaHash &quot;recurso|sede&quot; → ColaFIFO<BR/>solicitudes: TablaHash</TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+solicitarTurno() +verSiguiente()<BR/>+obtenerSiguiente() +cancelarSolicitud()<BR/>+cancelarPorRecurso()</TD></TR></TABLE>>];
+categorias [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFF5D6"><B>GestorCategorias (M05)</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">indice: ArbolAVL<BR/>raices: VectorDinamico<BR/>nombresPorPadre: ConjuntoHash</TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+registrarCategoria() +subarbol()<BR/>+codigosSubarbol() +listarPorCodigo()</TD></TR></TABLE>>];
+informes [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFF5D6"><B>GeneradorInformes (M06)</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+reporteUso() +reporteInventario()<BR/>+masPrestados() +porAntiguedad()<BR/>+buscarPorNombre() +tasaDevolucion()<BR/>+demandaPorCategoria()</TD></TR></TABLE>>];
+inventario [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFF5D6"><B>GestorInventario (M07)</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">matriz sede × recurso<BR/>filaDeSede, columnaDeRecurso: TablaHash</TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+fijarUnidades() +decrementar() +trasladar()<BR/>+filasPorRecurso() +matrizSedeDia()</TD></TR></TABLE>>];
+condiciones [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFE0CC"><B>GestorCondiciones (M07)</B></TD></TR><TR><TD BGCOLOR="#FFE0CC"><FONT POINT-SIZE="9" COLOR="#7A4B00">nuevo: baja lógica, el recurso no se borra</FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">desde: TablaHash (fecha de la condición)<BR/>Operativo · Dañado · En reparación<BR/>Sin uso · Dado de baja</TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+cambiar(codigo, condicion)<BR/>+listarNoOperativos() +diasEnCondicion()<BR/>+resumen()<BR/>validarOperativo(recursos, codigo)</TD></TR></TABLE>>];
+asistente [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFF5D6"><B>AsistenteDecisiones (M08)</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">usa Monticulo (mín. y máx.)</TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+recomendarRedistribucion() +priorizarCompras()<BR/>+predecirDisponibilidad() +alertasPriorizadas()<BR/>+vencimientosProximos() +resumenNoOperativos()</TD></TR></TABLE>>];
+red [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFF5D6"><B>GestorRedSedes (M09)</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">grafo: Grafo (lista de adyacencia)</TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+sedeMasCercanaConRecurso() +rutaMasCorta()<BR/>+rutasAlternativas() +sedesAisladas()</TD></TR></TABLE>>];
+usuario [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFFFFF"><B>Usuario</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">codigo, nombre, email<BR/>tipoDocumento, numeroDocumento<BR/>estado, prestamosActivos</TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+esActivo() +documento()</TD></TR></TABLE>>];
+recurso [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFFFFF"><B><I>Recurso</I> (abstracta)</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">codigo, nombre, categoria, estado<BR/>cantidadPrestamos, prestamosActivos<BR/>TIPO, CAMPOS</TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+estaVigente() +actualizarCampo()<BR/>+obtenerInfo()</TD></TR></TABLE>>];
+libro [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFFFFF"><B>Libro</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">autor, isbn, añoPublicacion</TD></TR></TABLE>>];
+equipo [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFFFFF"><B>Equipo</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">tipoEquipo, modelo, ubicacion</TD></TR></TABLE>>];
+sala [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFFFFF"><B>Sala</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">capacidad, dotacion</TD></TR></TABLE>>];
+sede [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFFFFF"><B>Sede</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">codigo, nombre</TD></TR></TABLE>>];
+prestamo [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFFFFF"><B>Prestamo</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">codigo, usuario, recurso, sede<BR/>fechaPrestamo, diasLimite, fechaDevolucion</TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+fechaLimite() +diasAtraso()</TD></TR></TABLE>>];
+solicitud [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFFFFF"><B>Solicitud</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">codigo, usuario, recurso, sede, estado</TD></TR></TABLE>>];
+categoria [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFFFFF"><B>Categoria</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">codigo, nombre, padre<BR/>hijas: VectorDinamico</TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+nivel() +ruta()</TD></TR></TABLE>>];
+alerta [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#333333"><TR><TD BGCOLOR="#FFFFFF"><B>Alerta / Traslado</B></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">urgencia, tipo, mensaje<BR/>recurso, origen, destino, unidades</TD></TR></TABLE>>];
+{rank=same; interfaz; persistencia;}
+{rank=same; asistente; informes; red;}
+{rank=same; prestamos; condiciones;}
+{rank=same; turnos;}
+{rank=same; usuarios; recursos; categorias; inventario;}
+{rank=same; usuario; recurso; sede; prestamo; solicitud; categoria; alerta;}
+{rank=same; libro; equipo; sala;}
+leyenda [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="2" CELLPADDING="3" COLOR="#333333">
+<TR><TD COLSPAN="2"><B>Convenciones</B></TD></TR>
+<TR><TD ALIGN="LEFT">◆──</TD><TD ALIGN="LEFT">composición (Sistema crea el gestor)</TD></TR>
+<TR><TD ALIGN="LEFT">- - -&gt;</TD><TD ALIGN="LEFT">dependencia (lo recibe en el constructor)</TD></TR>
+<TR><TD ALIGN="LEFT">──▷</TD><TD ALIGN="LEFT">herencia</TD></TR>
+<TR><TD ALIGN="LEFT">── *</TD><TD ALIGN="LEFT">asociación (el gestor guarda muchos)</TD></TR>
+<TR><TD BGCOLOR="#FFE0CC"> </TD><TD ALIGN="LEFT">nuevo en la versión final</TD></TR>
+</TABLE>>];
+{rank=same; leyenda; interfaz;}
+interfaz -> sistema [style=dashed, arrowhead=vee, color="#666666", xlabel=" usa"];
+persistencia -> sistema [style=dashed, arrowhead=vee, color="#666666", xlabel=" usa"];
+sistema -> usuarios [arrowtail=diamond, dir=back, color="#444444"];
+sistema -> recursos [arrowtail=diamond, dir=back, color="#444444"];
+sistema -> prestamos [arrowtail=diamond, dir=back, color="#444444"];
+sistema -> turnos [arrowtail=diamond, dir=back, color="#444444"];
+sistema -> categorias [arrowtail=diamond, dir=back, color="#444444"];
+sistema -> informes [arrowtail=diamond, dir=back, color="#444444"];
+sistema -> inventario [arrowtail=diamond, dir=back, color="#444444"];
+sistema -> condiciones [arrowtail=diamond, dir=back, color="#444444"];
+sistema -> asistente [arrowtail=diamond, dir=back, color="#444444"];
+sistema -> red [arrowtail=diamond, dir=back, color="#444444"];
+recursos -> inventario [style=dashed, arrowhead=vee, color="#666666"];
+recursos -> categorias [style=dashed, arrowhead=vee, color="#666666"];
+turnos -> usuarios [style=dashed, arrowhead=vee, color="#666666"];
+turnos -> recursos [style=dashed, arrowhead=vee, color="#666666"];
+turnos -> inventario [style=dashed, arrowhead=vee, color="#666666"];
+prestamos -> usuarios [style=dashed, arrowhead=vee, color="#666666"];
+prestamos -> recursos [style=dashed, arrowhead=vee, color="#666666"];
+prestamos -> inventario [style=dashed, arrowhead=vee, color="#666666"];
+prestamos -> turnos [style=dashed, arrowhead=vee, color="#666666"];
+informes -> usuarios [style=dashed, arrowhead=vee, color="#666666"];
+informes -> recursos [style=dashed, arrowhead=vee, color="#666666"];
+informes -> prestamos [style=dashed, arrowhead=vee, color="#666666"];
+informes -> categorias [style=dashed, arrowhead=vee, color="#666666"];
+condiciones -> recursos [style=dashed, arrowhead=vee, color="#666666"];
+condiciones -> prestamos [style=dashed, arrowhead=vee, color="#666666"];
+condiciones -> turnos [style=dashed, arrowhead=vee, color="#666666"];
+asistente -> usuarios [style=dashed, arrowhead=vee, color="#666666"];
+asistente -> recursos [style=dashed, arrowhead=vee, color="#666666"];
+asistente -> inventario [style=dashed, arrowhead=vee, color="#666666"];
+asistente -> prestamos [style=dashed, arrowhead=vee, color="#666666"];
+asistente -> turnos [style=dashed, arrowhead=vee, color="#666666"];
+asistente -> condiciones [style=dashed, arrowhead=vee, color="#666666"];
+red -> recursos [style=dashed, arrowhead=vee, color="#666666"];
+red -> inventario [style=dashed, arrowhead=vee, color="#666666"];
+usuarios -> usuario [arrowhead=none, color="#444444", headlabel="*"];
+recursos -> recurso [arrowhead=none, color="#444444", headlabel="*"];
+recursos -> sede [arrowhead=none, color="#444444", headlabel="*"];
+prestamos -> prestamo [arrowhead=none, color="#444444", headlabel="*"];
+turnos -> solicitud [arrowhead=none, color="#444444", headlabel="*"];
+categorias -> categoria [arrowhead=none, color="#444444", headlabel="*"];
+asistente -> alerta [arrowhead=none, color="#444444", headlabel="*"];
+recurso -> libro [dir=back, arrowtail=empty, color="#444444"];
+recurso -> equipo [dir=back, arrowtail=empty, color="#444444"];
+recurso -> sala [dir=back, arrowtail=empty, color="#444444"];
+categoria -> categoria [arrowhead=none, color="#444444", xlabel=" hijas"];
+condiciones -> recurso [style=dashed, arrowhead=vee, color="#666666", xlabel=" cambia estado"];
+}
