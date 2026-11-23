@@ -8,7 +8,9 @@ ACTIVO, INACTIVO = "Activo", "Inactivo"
 TIPOS_DOCUMENTO = (("CC", "Cédula de ciudadanía"), ("TI", "Tarjeta de identidad"),
                    ("CE", "Cédula de extranjería"), ("PA", "Pasaporte"))
 
+
 class Usuario:
+
     def __init__(self, codigo, nombre, email, tipoDocumento, numeroDocumento,
                  fechaRegistro=None, estado=ACTIVO):
         self.codigo = codigo
