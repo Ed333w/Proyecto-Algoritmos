@@ -1,11 +1,14 @@
 from estructuras import TablaHash
-from estructuras.Algoritmos import (mergeSort, quickSort, busquedaSecuencial, busquedaBinaria, busquedaBinariaRecursiva)
+from estructuras.Algoritmos import (mergeSort, quickSort, busquedaSecuencial,
+                                    busquedaBinaria, busquedaBinariaRecursiva)
 from modulos.comun import validarTexto, validarEntero
 
 SIN_CATEGORIA = "Sin categoría"
 
+
 def _nombre(recurso):
     return recurso.nombre.lower()
+
 
 class GeneradorInformes:
 
@@ -103,4 +106,3 @@ class GeneradorInformes:
 
     def recursosPorNombre(self):            #El catálogo ya está ordenado: es el recorrido en orden del BST (RQF-052).
         return self.recursos.catalogoOrdenado()
-
