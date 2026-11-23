@@ -1,8 +1,9 @@
 from estructuras import VectorDinamico, TablaHash, ConjuntoHash
 from modulos.comun import GeneradorCodigos, validarTexto, validarEmail
-from .usuario import Usuario
+from .usuario import Usuario, TIPOS_DOCUMENTO
 
 class GestorUsuarios:
+
     def __init__(self):
         self.usuarios = VectorDinamico()
         self.indice = TablaHash()
@@ -11,7 +12,7 @@ class GestorUsuarios:
         self.activos = ConjuntoHash()
         self.codigos = GeneradorCodigos("U", 3)
 
-    #---- altas ----
+    # ---- altas ----
     def _validarEmailLibre(self, email, codigoPropio=None):
         dueño = self.indiceEmail.buscar(email)
         if dueño is not None and dueño != codigoPropio:
@@ -20,9 +21,9 @@ class GestorUsuarios:
     @staticmethod
     def validarDocumento(tipo, numero):         #devuelve (sigla, número) normalizados. CC, TI y CE solo llevan dígitos (5 a 12); el pasaporte admite letras y dígitos (5 a 12).
         sigla = validarTexto(tipo, "El tipo de documento").upper()
-        if not any(sigla == s for s, _ in Usuario.TIPOS_DOCUMENTO):
-            opciones = ", ".join(f"{s} ({n})" for s, n in Usuario.TIPOS_DOCUMENTO)
-            raise ValueError(f"Tipo de documento '{tipo}' no válido. Opciones: {opciones}") 
+        if not any(sigla == s for s, _ in TIPOS_DOCUMENTO):
+            opciones = ", ".join(f"{s} ({n})" for s, n in TIPOS_DOCUMENTO)
+            raise ValueError(f"Tipo de documento '{tipo}' no válido. Opciones: {opciones}")
         numero = validarTexto(str(numero), "El número de documento").replace(".", "").replace(" ", "").upper()
         valido = numero.isalnum() if sigla == "PA" else numero.isdigit()
         if not valido or not 5 <= len(numero) <= 12:
@@ -37,7 +38,8 @@ class GestorUsuarios:
     def _indexar(self, usuario):
         clave = self._claveDocumento(usuario.tipoDocumento, usuario.numeroDocumento)
         if self.indiceDocumento.contiene(clave):
-            raise ValueError(f"Ya hay un usuario con el documento {usuario.documento()}: {self.indiceDocumento.buscar(clave).codigo}")
+            raise ValueError(f"Ya hay un usuario con el documento {usuario.documento()}: "
+                             f"{self.indiceDocumento.buscar(clave).codigo}")
         self.indiceDocumento.insertar(clave, usuario)
         self.usuarios.agregar(usuario)
         self.indice.insertar(usuario.codigo, usuario)
@@ -45,7 +47,7 @@ class GestorUsuarios:
         if usuario.esActivo():
             self.activos.agregar(usuario.codigo)
 
-    def registrar(self, nombre, email, tipoDocumento, numeroDocumento): #RQF-001: alta con código automático. Rechaza datos vacíos, correos repetidos y documentos ya registrados.   
+    def registrar(self, nombre, email, tipoDocumento, numeroDocumento): #RQF-001: alta con código automático. Rechaza datos vacíos, correos repetidos y documentos ya registrados.
         nombre = validarTexto(nombre, "El nombre")
         sigla, numero = self.validarDocumento(tipoDocumento, numeroDocumento)
         email = validarEmail(email)
