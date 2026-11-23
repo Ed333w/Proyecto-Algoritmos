@@ -13,6 +13,7 @@ class Recurso(ABC):
         self.fechaRegistro = datetime.now()
         self.estado = "Disponible"
         self.cantidadPrestamos = 0
+        self.prestamosActivos = 0
 
     @abstractmethod
     def obtenerTipo(self): # retorna el tipo de recurso
@@ -24,6 +25,9 @@ class Recurso(ABC):
 
     def esDisponible(self): # verifica si el recurso está disponible
         return self.estado == "Disponible"
+
+    def estaVigente(self):
+        return self.estado in ("Vigente", "Disponible")
 
     def marcarNoDisponible(self): # en caso de no estar disponible, lo marca como no disponible en el estado
         self.estado = "No disponible"

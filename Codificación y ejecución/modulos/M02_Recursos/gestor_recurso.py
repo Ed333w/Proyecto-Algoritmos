@@ -10,11 +10,16 @@ from .libro import Libro
 from .equipo import Equipo
 from .sala import Sala
 from .sede import Sede
-from modulos.M07_Inventario import GestorInventario
+
+
+def _claveCatalogo(recurso):
+    return recurso.nombre.lower(), recurso.codigo
 
 
 class GestorRecursos:
     def __init__(self, numSedes=10):
+        from modulos.M07_Inventario import GestorInventario
+
         self.recursos = VectorDinamico(capacidadInicial=20) # 20 recursos iniciales
         self.indice = TablaHash(tamaño=100)  # Búsqueda O(1) por código
         self.contadorCodigos = 0
