@@ -17,7 +17,7 @@ RECORRIDO = [
     "2", "", "Equipo", "", "R0005", "",
     "3", "R0013", "2", "James Stewart", "", "4", "", "5", "", "6", "Equipo", "",
     "7", "C012", "s", "", "8", "Prestado", "", "9", "", "10", "Oriente", "", "11", "", "0",
-    "7", "1", "", "2", "R0001", "", "", "2", "", "Libro", "python", "", "", "3", "R0013", "Centro", "2", "",
+    "7", "1", "", "", "1", "lab", "", "2", "R0001", "", "", "2", "", "Libro", "python", "", "", "3", "R0013", "Centro", "2", "",
     "4", "R0003", "3", "",
     "5", "R0006", "5", "", "5", "R0011", "1", "", "6", "", "0",
     "3", "1", "U006", "R0013", "Centro", "", "1", "", "1", "luis", "", "Sala", "estudio", "Centro", "s", "", "2", "P0012", "",
@@ -81,7 +81,7 @@ def test_interfaz_borde(caso, tmp_path):
 def test_interfaz_cuello(caso, tmp_path, cronometro):
     caso.inicio("Interfaz (menú)", "Cuello de botella", "Abrir el programa con los datos de prueba (más de 1.000 registros) y "
                 "pedir listados, informes y alertas", "Carga, responde y guarda sin errores")
-    shutil.copytree(os.path.join(RAIZ, "datos de prueba"), tmp_path, dirs_exist_ok=True)
+    shutil.copytree(os.path.join(RAIZ, "datos_prueba"), tmp_path, dirs_exist_ok=True)
     entradas = ["", "1", "6", "", "0", "6", "1", "", "3", "10", "", "0", "8", "4", "", "2", "10", "", "0", "0"]
     with cronometro() as t:
         salida, codigo = _ejecutar(entradas, tmp_path)

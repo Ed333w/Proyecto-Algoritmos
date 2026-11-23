@@ -11,8 +11,7 @@ datos propias.
 |---|---|
 | `Analisis y planeación/` | Informes de entrega y documentación de casos de prueba |
 | `Diseño/` | Diagrama de clases y modelos |
-| `Codificación y ejecución/` | Código, pruebas y datos de prueba — ver [Como ejcutar.md](Codificación%20y%20ejecución/Como%20ejcutar.md) |
-| `.github/workflows/` | CI/CD con GitHub Actions |
+| `Codificación y ejecución/` | Código, pruebas y datos de prueba — ver [COMO_EJECUTAR.md](Codificación%20y%20ejecución/COMO_EJECUTAR.md) |
 
 ```bash
 cd "Codificación y ejecución"
@@ -36,7 +35,7 @@ En este proyecto usamos a **Claude** (Anthropic) como herramienta de apoyo, no c
 **En qué nos ayudó Claude**
 - Mejorar nuestras ideas y proponer alternativas (por ejemplo, el asistente de decisiones del M08).
 - Encontrar y corregir errores, quitar código duplicado y ordenar el código.
-- Proponer casos de prueba (exitoso, borde y cuello de botella) y el flujo de CI/CD.
+- Proponer casos de prueba (exitoso, borde y cuello de botella).
 - Dar formato y redacción a la documentación (informe, casos de prueba, Kanban).
 
 **Cómo lo usamos de forma responsable**

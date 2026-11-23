@@ -3,7 +3,22 @@
 from modulos.M07_Inventario import CONDICIONES, condicionDe
 from .consola import leer, leerEntero, confirmar, tabla, ejecutarMenu
 from .menu_prestamos import informarAsignados
-from .menu_recursos import elegirRecurso
+from .menu_recursos import elegirRecurso, estadoVisible
+
+
+def matrizSedeRecurso(sesion):
+    """RQF-010: matriz sede × recurso, una fila por recurso y una columna por sede.
+    Se puede filtrar por parte del nombre o del código (Enter = todos)."""
+    sistema = sesion.sistema
+    filtro = leer("Filtrar por nombre o código (Enter para ver todos): ").lower()
+    recursos = [r for r in sistema.recursos.listarTodos()
+                if not filtro or filtro in r.nombre.lower() or filtro in r.codigo.lower()]
+    sedes, filas = sistema.inventario.filasPorRecurso([r.codigo for r in recursos])
+    print()
+    tabla(["Código", "Tipo", "Nombre", "Estado"] + list(sedes) + ["Total"],
+          [[r.codigo, r.TIPO, r.nombre, estadoVisible(sistema, r)] + unidades + [total]
+           for r, (_, unidades, total) in zip(recursos, filas)],
+          vacio="(ningún recurso coincide)")
 
 
 def disponibilidad(sesion):
@@ -72,7 +87,7 @@ def noOperativos(sesion):
 
 def menu(sesion):
     ejecutarMenu("M07 · INVENTARIO", (
-        ("Matriz sede × recurso", lambda s: print(s.sistema.inventario.mostrarMatriz())),
+        ("Matriz sede × recurso", matrizSedeRecurso),
         ("Disponibilidad de un recurso por sede", disponibilidad),
         ("Fijar unidades de un recurso en una sede", fijarUnidades),
         ("Matriz sede × día (proyección)", matrizSedeDia),

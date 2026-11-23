@@ -10,7 +10,7 @@ from persistencia import guardar, cargar, hayDatosGuardados
 from persistencia.Persistencia import ARCHIVOS
 from persistencia.datos_masivos import crearSistemaMasivo, contarRegistros
 
-CARPETA_PRUEBA = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "datos de prueba")
+CARPETA_PRUEBA = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "datos_prueba")
 
 
 def test_rqf050_exitoso(caso, demo, tmp_path):
@@ -80,7 +80,7 @@ def test_rqf050_cuello(caso, tmp_path, cronometro):
 
 
 def test_datos_prueba_mas_de_500(caso):
-    caso.inicio("RQF-050", "Cuello de botella", "Cargar la carpeta «datos de prueba» incluida en el repositorio",
+    caso.inicio("RQF-050", "Cuello de botella", "Cargar la carpeta «datos_prueba» incluida en el repositorio",
                 "Más de 500 registros, coherentes con el inventario")
     s = cargar(CARPETA_PRUEBA)
     caso.resultado(f"{contarRegistros(s):,} registros: {s.resumen()}")

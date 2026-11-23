@@ -45,7 +45,7 @@ python -m pytest -v         # con el nombre de cada caso
 
 Cada RQF y cada estructura tiene tres casos: **exitoso**, **borde** y **cuello de botella**. Al terminar se genera `tests/reporte/resultados_pruebas.json` con lo esperado, lo obtenido y el tiempo de cada caso (ver `PRUEBAS.md`).
 
-Para regenerar la carpeta `datos de prueba/`: `python -m persistencia.datos_masivos`.
+Para regenerar la carpeta `datos_prueba/`: `python -m persistencia.datos_masivos`.
 
 Para medir las estructuras propias frente a `list`, `dict` y `set` de Python (comparación que pide el lineamiento): `python medicion_eficiencia.py resultado.json`.
 
@@ -65,7 +65,7 @@ modulos/
 persistencia/                guardar/cargar en .txt, datos de demostración y datos masivos
 interfaz/                    un menú por módulo + consola.py (entrada/salida común)
 tests/                       pruebas por módulo con reporte de casos
-datos de prueba/             1.172 registros de prueba en texto plano
+datos_prueba/                1.172 registros de prueba en texto plano
 ```
 
 ## Estructura de datos por requerimiento
@@ -86,17 +86,3 @@ datos de prueba/             1.172 registros de prueba en texto plano
 | Montículo | Redistribución, compras, alertas y vencimientos (RQF-046, 047, 049, 051) |
 | Grafo (lista de adyacencia) | Red de sedes: BFS, ruta más corta, backtracking, aisladas (RQF-028 a 030) |
 | Recursión | Subárbol de categorías, merge sort, quick sort, búsqueda binaria recursiva, backtracking |
-
-## CI/CD (GitHub Actions)
-
-El flujo `.github/workflows/ci_cd.yml` se ejecuta en cada push y pull request a `main`:
-
-1. **Calidad:** compila todo y revisa estilo con flake8.
-2. **Pruebas:** las 200 pruebas en Linux y Windows con Python 3.9, 3.11 y 3.13; sube el reporte de casos como artefacto.
-3. **Ejecución:** abre el programa con los datos de prueba, recorre menús, verifica que guarda al salir y publica la medición de eficiencia.
-4. **Entrega (CD):** al crear una etiqueta `v*`, si todo pasó, publica un Release con el ZIP del sistema.
-
-```bash
-git tag v3.0
-git push origin v3.0
-```

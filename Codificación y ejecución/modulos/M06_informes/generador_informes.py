@@ -31,7 +31,7 @@ class GeneradorInformes:
         }
 
     # ---- RQF-034 ----
-    def reporteInventario(self):   #Recursos por tipo y unidades disponibles por tipo(el detalle por sede esta en M07)
+    def reporteInventario(self):  # Recursos por tipo y unidades disponibles por tipo(el detalle por sede esta en M07)
         filas = []
         for tipo in ("Libro", "Equipo", "Sala"):
             recursos = self.recursos.listarxTipo(tipo)
@@ -53,7 +53,8 @@ class GeneradorInformes:
                          reverso=not masAntiguosPrimero)
 
     # ---- RQF-024 ----
-    def buscarPorNombre(self, nombre, recursiva=False):         #Búsqueda binaria sobre el catálogo ordenado del BST. Devuelve los recursos con ese nombre (puede haber varios con el mismo nombre)
+    # Búsqueda binaria sobre el catálogo ordenado del BST. Devuelve los recursos con ese nombre (puede haber varios con el mismo nombre)
+    def buscarPorNombre(self, nombre, recursiva=False):
         objetivo = validarTexto(nombre, "El nombre a buscar").lower()
         catalogo = self.recursos.catalogoOrdenado()
         buscar = busquedaBinariaRecursiva if recursiva else busquedaBinaria
@@ -66,14 +67,15 @@ class GeneradorInformes:
             i += 1
         return encontrados
 
-    def buscarPorNombreSecuencial(self, nombre):            #Misma búsqueda pero secuencial sobre el vector sin ordenar (para comparar).
+    def buscarPorNombreSecuencial(self, nombre):  # Misma búsqueda pero secuencial sobre el vector sin ordenar (para comparar).
         objetivo = validarTexto(nombre, "El nombre a buscar").lower()
         vigentes = [r for r in self.recursos.listarTodos() if r.estaVigente()]
         i = busquedaSecuencial(vigentes, objetivo, clave=_nombre)
         return vigentes[i] if i != -1 else None
 
     # ---- RQF-032 ----
-    def tasaDevolucion(self, ahora=None):           #Préstamos devueltos a tiempo frente al total de préstamos ya vencidos o cerrados (los activos que aún están dentro del plazo no se cuentan).
+    # Préstamos devueltos a tiempo frente al total de préstamos ya vencidos o cerrados (los activos que aún están dentro del plazo no se cuentan).
+    def tasaDevolucion(self, ahora=None):
         aTiempo = tarde = 0
         for p in self.prestamos.listarTodos():
             if p.estaActivo() and not p.estaAtrasado(ahora):
@@ -87,7 +89,7 @@ class GeneradorInformes:
                 "porcentaje": round(100 * aTiempo / total, 1) if total else 0.0}
 
     # ---- RQF-033 ----
-    def demandaPorCategoria(self, agruparEnPrincipal=False):            #[(nombre de categoría, préstamos)] de mayor a menor demanda.
+    def demandaPorCategoria(self, agruparEnPrincipal=False):  # [(nombre de categoría, préstamos)] de mayor a menor demanda.
         conteo = TablaHash()
         for p in self.prestamos.listarTodos():
             codigoCategoria = self.recursos.obtener(p.codigoRecurso).categoria
@@ -104,5 +106,5 @@ class GeneradorInformes:
     def usuariosPorNombre(self):
         return mergeSort(self.usuarios.listarTodos(), clave=lambda u: (u.nombre.lower(), u.codigo))
 
-    def recursosPorNombre(self):            #El catálogo ya está ordenado: es el recorrido en orden del BST (RQF-052).
+    def recursosPorNombre(self):  # El catálogo ya está ordenado: es el recorrido en orden del BST (RQF-052).
         return self.recursos.catalogoOrdenado()

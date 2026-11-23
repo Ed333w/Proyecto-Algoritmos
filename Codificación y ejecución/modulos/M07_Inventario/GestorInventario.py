@@ -1,12 +1,12 @@
-# Maria Fernanda Morales
+"""M07 · Inventario por sede (RQF-009, 010 y 045).
 
-# M07 - Inventario
-
-# El inventario se representa como una matriz de sedes x recursos, donde cada celda contiene la
-# cantidad de unidades disponibles de un recurso en una sede. Se usan tablas hash para mapear
-# nombres de sedes y códigos de recursos a índices de filas y columnas, respectivamente.
-# Se permite redimensionar la matriz cuando se agregan más recursos que la capacidad inicial.
-
+- Matriz sede × recurso: matriz[i][j] = unidades disponibles del recurso j en la sede i.
+  Las columnas duplican su capacidad cuando se llenan (como el vector dinámico).
+- Tablas hash propias traducen nombre de sede -> fila y código de recurso -> columna,
+  así cada consulta o actualización es O(1) promedio.
+- Matriz sede × día (RQF-010): proyección de unidades por día según las fechas
+  límite de los préstamos activos.
+"""
 
 from datetime import timedelta
 
@@ -112,15 +112,30 @@ class GestorInventario:
         self.matriz[idest][j] += cantidad
 
     # ---- vistas ----
+    def filasPorRecurso(self, codigos=None):
+        """RQF-010 (sede × recurso) para mostrar: la matriz guarda sedes × recursos, pero
+        como hay pocas sedes y muchos recursos se presenta girada: una fila por recurso y
+        una columna por sede, más el total. Devuelve (sedes, [(código, [unidades por sede], total)])."""
+        codigos = codigos if codigos is not None else self.recursos.recorrer()
+        sedes = self.sedes.recorrer()
+        filas = []
+        for codigo in codigos:
+            j = self.columnaDeRecurso.buscar(codigo)
+            if j is None:
+                raise ValueError(f"El recurso {codigo} no está en el inventario")
+            unidades = [self.matriz[i][j] for i in range(len(sedes))]
+            filas.append((codigo, unidades, sum(unidades)))
+        return sedes, filas
+
     def mostrarMatriz(self, codigos=None):
-        """RQF-010 (sede × recurso): tabla de texto; 'codigos' limita las columnas."""
-        columnas = codigos if codigos is not None else self.recursos.recorrer()
-        ancho = max([16] + [len(s) + 2 for s in self.sedes])
-        lineas = ["Sede \\ Recurso".ljust(ancho) + "".join(c.ljust(8) for c in columnas)]
-        lineas.append("-" * len(lineas[0]))
-        for i, sede in enumerate(self.sedes):
-            celdas = "".join(str(self.matriz[i][self.columnaDeRecurso.buscar(c)]).ljust(8) for c in columnas)
-            lineas.append(sede.ljust(ancho) + celdas)
+        """RQF-010 (sede × recurso) como texto: una fila por recurso, una columna por sede y el total."""
+        sedes, filas = self.filasPorRecurso(codigos)
+        encabezado = ["Recurso"] + list(sedes) + ["Total"]
+        datos = [[codigo] + [str(u) for u in unidades] + [str(total)] for codigo, unidades, total in filas]
+        anchos = [max([len(encabezado[k])] + [len(f[k]) for f in datos]) for k in range(len(encabezado))]
+        formato = "  ".join(f"{{:<{a}}}" for a in anchos)
+        lineas = [formato.format(*encabezado), "  ".join("-" * a for a in anchos)]
+        lineas += [formato.format(*f) for f in datos]
         return "\n".join(lineas)
 
     def matrizSedeDia(self, codigoRecurso, prestamosActivos, dias=7, hoy=None):

@@ -37,7 +37,7 @@ class Recurso(ABC):
         self.cantidadPrestamos = 0   # histórico: lo usa el informe de más prestados
         self.prestamosActivos = 0
         # Revisa que todos los datos propios estén presentes y sean validos
-        faltantes = [etiqueta for atributo, etiqueta, _ in self.CAMPOS if atributo not in datosPropios] 
+        faltantes = [etiqueta for atributo, etiqueta, _ in self.CAMPOS if atributo not in datosPropios]
         if faltantes:
             raise ValueError(f"Faltan datos del {self.TIPO.lower()}: {', '.join(faltantes)}")
         for atributo, _, validar in self.CAMPOS:
@@ -48,6 +48,7 @@ class Recurso(ABC):
     def camposEditables(cls):
         return (("nombre", "Nombre", texto("El nombre")),) + cls.CAMPOS
     # Permite actualizar un campo que sea editable.
+
     def actualizarCampo(self, atributo, valor):
         for campo, _, validar in self.camposEditables():
             if campo == atributo:
@@ -55,6 +56,7 @@ class Recurso(ABC):
                 return
         raise ValueError(f"El campo '{atributo}' no existe para un {self.TIPO.lower()}")
     # Devuelve TRUE si el recurso está vigente, es decir, disponible para prestamo
+
     def estaVigente(self):
         return self.estado == VIGENTE
 
@@ -70,13 +72,17 @@ class Recurso(ABC):
         self.cantidadPrestamos = max(0, self.cantidadPrestamos - 1)
         self.prestamosActivos = max(0, self.prestamosActivos - 1)
     # Descuenta un prestamo activo sin afectar el contador.
+
     def cerrarPrestamo(self):
         self.prestamosActivos = max(0, self.prestamosActivos - 1)
+
     def reabrirPrestamo(self):
         self.prestamosActivos += 1
+
     def datosPropios(self):
         return [(etiqueta, getattr(self, atributo)) for atributo, etiqueta, _ in self.CAMPOS]
     # Devuelve toda la informacion del recurso.
+
     def obtenerInfo(self):
         info = {
             "codigo": self.codigo,
@@ -91,12 +97,15 @@ class Recurso(ABC):
             info[etiqueta] = valor
         return info
     # Permite comparar recursos mediante su codigo
+
     def __eq__(self, otro):
         return isinstance(otro, Recurso) and self.codigo == otro.codigo
     # permite usar recursos como claves de diccionario con el fin de agruparlos en categorias
+
     def __hash__(self):
         return hash(self.codigo)
     # Permie mostrar recurssi como texto
+
     def __str__(self):
         return f"{self.codigo}: {self.nombre} ({self.TIPO})"
 

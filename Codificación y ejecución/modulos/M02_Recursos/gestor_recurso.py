@@ -25,6 +25,8 @@ DISPONIBLE, PRESTADO, SIN_UNIDADES = "Disponible", "Prestado", "Sin unidades"
 ESTADOS = (DISPONIBLE, PRESTADO, SIN_UNIDADES, DADO_DE_BAJA)
 
 # Devuelve la clase de recurso según el tipo (Libro, Equipo o Sala) para no repetir código por tipo.
+
+
 def claseDeTipo(tipo):
     for clase in TIPOS:
         if clase.TIPO.lower() == str(tipo).strip().lower():
@@ -59,6 +61,7 @@ class GestorRecursos:
             raise ValueError("No hay módulo de categorías para asignar la categoría")
         return self.categorias.obtener(categoria).codigo
     # Agrega un recurso al gestor y estructuras de buscqueda mas no un recurso nuevo.
+
     def _indexar(self, recurso):
         self.recursos.agregar(recurso)
         self.indice.insertar(recurso.codigo, recurso)
@@ -66,14 +69,17 @@ class GestorRecursos:
             self._agregarAlCatalogo(recurso)
         self.inventario.registrarRecurso(recurso.codigo)
     # agrega un recurso al catálogo.
+
     def _agregarAlCatalogo(self, recurso):
         self.catalogo.insertar(_claveCatalogo(recurso), recurso)
         self._catalogoOrdenado = None
     # elimina del catalogo.
+
     def _quitarDelCatalogo(self, clave):
         self.catalogo.eliminar(clave)
         self._catalogoOrdenado = None
     # Registra un nuevo recurso del tipo especificado, entre Libro, Equipo o Sala, con su categoría y datos propios.
+
     def registrar(self, tipo, nombre, categoria=None, **datosPropios):
         """RQF-005: crea el recurso del tipo pedido (herencia) con su categoría."""
         clase = claseDeTipo(tipo)
@@ -95,6 +101,7 @@ class GestorRecursos:
     def registrarSala(self, nombre, capacidad, dotacion="Sin dotación", categoria=None):
         return self.registrar("Sala", nombre, categoria, capacidad=capacidad, dotacion=dotacion)
     # Carga un recurso existente en el sistema.
+
     def cargarExistente(self, recurso):
         """Persistencia: agrega un recurso ya creado conservando su código."""
         if self.indice.contiene(recurso.codigo):
@@ -102,16 +109,19 @@ class GestorRecursos:
         self.codigos.registrarExistente(recurso.codigo)
         self._indexar(recurso)
     # busca un recurso por su código (RQF-006 y RQF-020). Devuelve None si no existe.
+
     def buscarxCodigo(self, codigo):
         """RQF-006 y RQF-020: O(1) promedio. Devuelve None si no existe."""
         return self.indice.buscar(str(codigo).strip().upper())
     # Devuelve el recurso con el código dado o lanza error si no existe.
+
     def obtener(self, codigo):
         recurso = self.buscarxCodigo(codigo)
         if recurso is None:
             raise ValueError(f"El recurso {codigo} no existe")
         return recurso
     # Valida que el recurso exista y su vigencia, al final devuelve el recurso.
+
     def validarVigente(self, codigo):
         """Regla compartida por préstamos y turnos: el recurso existe y no está de baja."""
         recurso = self.obtener(codigo)
@@ -119,6 +129,7 @@ class GestorRecursos:
             raise ValueError(f"El recurso {recurso.codigo} está dado de baja")
         return recurso
     # busca un recurso por el tipo y nombre.
+
     def buscarPorTipoYNombre(self, tipo=None, nombre=""):
         """RQF-006: consulta sin conocer el código. Filtra por tipo (opcional) y por parte
         del nombre, sin importar mayúsculas; incluye los dados de baja. Ordenado por nombre."""
@@ -130,6 +141,7 @@ class GestorRecursos:
                        if (clase is None or isinstance(r, clase)) and texto in r.nombre.lower()]
         return mergeSort(encontrados, clave=lambda r: (r.nombre.lower(), r.codigo))
     # Actualiza un campo del recurso.
+
     def actualizar(self, codigo, atributo, valor):
         """RQF-007: cambia un dato del recurso (comunes o propios de su tipo)."""
         recurso = self.validarVigente(codigo)
@@ -142,6 +154,7 @@ class GestorRecursos:
             self._quitarDelCatalogo(claveAnterior)
             self._agregarAlCatalogo(recurso)
     # se usa cuando no se usa mas un recurso, mno lo elimina del sistema
+
     def darDeBaja(self, codigo):
         """RQF-008: baja lógica. Sale del catálogo y ya no se puede prestar ni pedir en turno."""
         recurso = self.validarVigente(codigo)

@@ -123,8 +123,11 @@ def test_rqf010_exitoso(caso, demo):
                 "La sala está en 0 hoy y vuelve a 1 mañana en Centro (vence el préstamo de U001)")
     texto = demo.inventario.mostrarMatriz()
     sedes, fechas, matriz = demo.inventario.matrizSedeDia("R0003", demo.prestamos.listarActivos(), 3)
-    caso.resultado(f"{len(texto.splitlines()) - 2} filas en la matriz sede × recurso; Centro por día: {matriz[0]}")
+    _, filas = demo.inventario.filasPorRecurso(["R0001"])
+    caso.resultado(f"{len(texto.splitlines()) - 2} recursos (filas) por {len(sedes)} sedes (columnas) en la matriz "
+                   f"sede × recurso; R0001 por sede {filas[0][1]}, total {filas[0][2]}; Centro por día: {matriz[0]}")
     assert sedes[0] == "Centro" and matriz[0] == [0, 1, 1] and len(fechas) == 3
+    assert len(texto.splitlines()) - 2 == 12 and filas[0][1][:2] == [4, 1] and filas[0][2] == 5
 
 
 def test_rqf010_borde(caso, demo):

@@ -2,6 +2,7 @@ from estructuras import VectorDinamico, TablaHash, ConjuntoHash
 from modulos.comun import GeneradorCodigos, validarTexto, validarEmail
 from .usuario import Usuario, TIPOS_DOCUMENTO
 
+
 class GestorUsuarios:
 
     def __init__(self):
@@ -19,7 +20,8 @@ class GestorUsuarios:
             raise ValueError(f"El correo {email} ya está registrado por {dueño}")
 
     @staticmethod
-    def validarDocumento(tipo, numero):         #devuelve (sigla, número) normalizados. CC, TI y CE solo llevan dígitos (5 a 12); el pasaporte admite letras y dígitos (5 a 12).
+    # devuelve (sigla, número) normalizados. CC, TI y CE solo llevan dígitos (5 a 12); el pasaporte admite letras y dígitos (5 a 12).
+    def validarDocumento(tipo, numero):
         sigla = validarTexto(tipo, "El tipo de documento").upper()
         if not any(sigla == s for s, _ in TIPOS_DOCUMENTO):
             opciones = ", ".join(f"{s} ({n})" for s, n in TIPOS_DOCUMENTO)
@@ -47,7 +49,8 @@ class GestorUsuarios:
         if usuario.esActivo():
             self.activos.agregar(usuario.codigo)
 
-    def registrar(self, nombre, email, tipoDocumento, numeroDocumento): #RQF-001: alta con código automático. Rechaza datos vacíos, correos repetidos y documentos ya registrados.
+    # RQF-001: alta con código automático. Rechaza datos vacíos, correos repetidos y documentos ya registrados.
+    def registrar(self, nombre, email, tipoDocumento, numeroDocumento):
         nombre = validarTexto(nombre, "El nombre")
         sigla, numero = self.validarDocumento(tipoDocumento, numeroDocumento)
         email = validarEmail(email)
@@ -57,17 +60,18 @@ class GestorUsuarios:
         self.codigos.siguiente()
         return usuario.codigo
 
-    def cargarExistente(self, usuario):    #Persistencia: agrega un usuario ya creado conservando su código.
+    def cargarExistente(self, usuario):  # Persistencia: agrega un usuario ya creado conservando su código.
         if self.indice.contiene(usuario.codigo):
             raise ValueError(f"El usuario {usuario.codigo} está repetido en los datos")
         self.codigos.registrarExistente(usuario.codigo)
         self._indexar(usuario)
 
     # ---- consultas ----
-    def buscarxCodigo(self, codigo):        #RQF-002 y RQF-019: O(1) promedio. Devuelve None si no existe.
+    def buscarxCodigo(self, codigo):  # RQF-002 y RQF-019: O(1) promedio. Devuelve None si no existe.
         return self.indice.buscar(str(codigo).strip().upper())
 
-    def buscarPorDocumento(self, tipoDocumento, numeroDocumento):       #RQF-002: consulta por tipo y número de documento, O(1) promedio. None si no existe.
+    # RQF-002: consulta por tipo y número de documento, O(1) promedio. None si no existe.
+    def buscarPorDocumento(self, tipoDocumento, numeroDocumento):
         sigla, numero = self.validarDocumento(tipoDocumento, numeroDocumento)
         return self.indiceDocumento.buscar(self._claveDocumento(sigla, numero))
 
@@ -83,7 +87,7 @@ class GestorUsuarios:
             raise ValueError(f"El usuario {codigo} no existe")
         return usuario
 
-    def validarActivo(self, codigo):        #regla compartida por préstamos y turnos: el usuario existe y está activo.
+    def validarActivo(self, codigo):  # regla compartida por préstamos y turnos: el usuario existe y está activo.
         usuario = self.obtener(codigo)
         if not usuario.esActivo():
             raise ValueError(f"El usuario {usuario.codigo} está inactivo")
@@ -102,7 +106,8 @@ class GestorUsuarios:
         return len(self.activos)
 
     # ---- modificaciones ----
-    def actualizarEmail(self, codigo, nuevoEmail):          #RQF-003: el nombre no cambia porque identifica al usuario en el historial. Rechaza correos repetidos.
+    # RQF-003: el nombre no cambia porque identifica al usuario en el historial. Rechaza correos repetidos.
+    def actualizarEmail(self, codigo, nuevoEmail):
         usuario = self.obtener(codigo)
         email = validarEmail(nuevoEmail)
         self._validarEmailLibre(email, usuario.codigo)
@@ -110,7 +115,7 @@ class GestorUsuarios:
         usuario.email = email
         self.indiceEmail.insertar(email, usuario.codigo)
 
-    def darDeBaja(self, codigo):            #RQF-004: baja lógica; conserva el historial. Exige no tener préstamos activos.
+    def darDeBaja(self, codigo):  # RQF-004: baja lógica; conserva el historial. Exige no tener préstamos activos.
         usuario = self.obtener(codigo)
         if not usuario.esActivo():
             raise ValueError(f"El usuario {usuario.codigo} ya está inactivo")
@@ -120,7 +125,7 @@ class GestorUsuarios:
         usuario.darDeBaja()
         self.activos.eliminar(usuario.codigo)
 
-    def reactivar(self, codigo):            #RQF-035: reactiva un usuario inactivo. Exige que no esté activo y que exista.
+    def reactivar(self, codigo):  # RQF-035: reactiva un usuario inactivo. Exige que no esté activo y que exista.
         usuario = self.obtener(codigo)
         if usuario.esActivo():
             raise ValueError(f"El usuario {usuario.codigo} ya está activo")

@@ -6,7 +6,7 @@ from persistencia import guardar, cargar
 from persistencia.datos_demo import crearSistemaDemo
 from .consola import confirmar, ejecutarMenu
 
-CARPETA_PRUEBA = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "datos de prueba")
+CARPETA_PRUEBA = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "datos_prueba")
 
 
 def guardarAhora(sesion):

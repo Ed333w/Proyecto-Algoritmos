@@ -1,6 +1,6 @@
 """Conjunto de datos de prueba con más de 500 registros (lineamiento del proyecto).
 
-Se genera siempre igual (semilla fija). Para crear la carpeta «datos de prueba»:
+Se genera siempre igual (semilla fija). Para crear la carpeta «datos_prueba»:
 
     python -m persistencia.datos_masivos
 
@@ -103,7 +103,7 @@ def contarRegistros(s):
 
 if __name__ == "__main__":
     from persistencia import guardar
-    carpeta = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), "..", "datos de prueba")
+    carpeta = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), "..", "datos_prueba")
     sistema = crearSistemaMasivo()
     guardar(sistema, carpeta)
     print(f"Datos de prueba en {os.path.abspath(carpeta)}: {contarRegistros(sistema)} registros "
